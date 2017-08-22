@@ -62,6 +62,8 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2ClientValidationResponseDTO;
 import org.wso2.carbon.identity.oauth2.model.CarbonOAuthAuthzRequest;
+import org.wso2.carbon.identity.oauth2.model.HTTPRequestHeaderHandler;
+import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 import org.wso2.carbon.identity.oauth2.model.OAuth2Parameters;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
@@ -638,11 +640,13 @@ public class OAuth2AuthzEndpoint {
             }
         }
 
+        HTTPRequestHeaderHandler requestHeaderHandler=new HTTPRequestHeaderHandler(request);
+
         OAuthResponse oauthResponse = null;
         String responseType = oauth2Params.getResponseType();
 
         // authorizing the request
-        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry);
+        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,requestHeaderHandler);
 
         if (authzRespDTO != null && authzRespDTO.getErrorCode() == null) {
             OAuthASResponse.OAuthAuthorizationResponseBuilder builder = OAuthASResponse
@@ -814,12 +818,16 @@ public class OAuth2AuthzEndpoint {
         // Now the client is valid, redirect him to the authorization page.
         OAuthAuthzRequest oauthRequest = new CarbonOAuthAuthzRequest(req);
 
+        //
+        HttpRequestHeader[] httpRequestHeaders=null;
+
         OAuth2Parameters params = new OAuth2Parameters();
         params.setClientId(clientId);
         params.setRedirectURI(clientDTO.getCallbackURL());
         params.setResponseType(oauthRequest.getResponseType());
         params.setResponseMode(oauthRequest.getParam(RESPONSE_MODE));
         params.setScopes(oauthRequest.getScopes());
+     //   params.setHttpRequestHeaders(httpRequestHeaders);
         if (params.getScopes() == null) { // to avoid null pointers
             Set<String> scopeSet = new HashSet<String>();
             scopeSet.add("");
@@ -1113,7 +1121,7 @@ public class OAuth2AuthzEndpoint {
      * @return
      */
     private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
-            , SessionDataCacheEntry sessionDataCacheEntry) {
+            , SessionDataCacheEntry sessionDataCacheEntry,HTTPRequestHeaderHandler httpRequestHeaderHandler) {
 
         OAuth2AuthorizeReqDTO authzReqDTO = new OAuth2AuthorizeReqDTO();
         authzReqDTO.setCallbackUrl(oauth2Params.getRedirectURI());
@@ -1128,6 +1136,7 @@ public class OAuth2AuthzEndpoint {
         authzReqDTO.setTenantDomain(oauth2Params.getTenantDomain());
         authzReqDTO.setAuthTime(oauth2Params.getAuthTime());
         authzReqDTO.setEssentialClaims(oauth2Params.getEssentialClaims());
+        authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
         return EndpointUtil.getOAuth2Service().authorize(authzReqDTO);
     }
 

@@ -68,6 +68,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
 import org.wso2.carbon.identity.oauth2.internal.OAuth2ServiceComponentHolder;
 import org.wso2.carbon.identity.oauth2.model.AccessTokenDO;
+import org.wso2.carbon.identity.oauth2.model.HTTPRequestHeaderHandler;
 import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
@@ -75,6 +76,8 @@ import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+
+import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 
 import java.security.Key;
 import java.security.KeyStore;
@@ -323,6 +326,24 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
     @Override
     public String buildIDToken(OAuthAuthzReqMessageContext request, OAuth2AuthorizeRespDTO tokenRespDTO)
             throws IdentityOAuth2Exception {
+        int sid=0;
+
+        HttpRequestHeader[] requestHeaders=request.getAuthorizationReqDTO().getHttpRequestHeaders();
+        for( HttpRequestHeader header: requestHeaders){
+                    String name=header.getName();
+                    log.info(name);
+           if(header.getName().equals("cookie")){
+               String[] values=header.getValue();
+               log.info(values);
+               for(String value:values){
+                   if(!value.contains("opbs")){
+                       sid=(int)(Math.random()*1000000 + 10000000L);
+
+                   }
+               }
+           }
+
+        }
 
         String tenantDomain = request.getAuthorizationReqDTO().getTenantDomain();
         IdentityProvider identityProvider = getResidentIdp(tenantDomain);
@@ -399,6 +420,9 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         jwtClaimsSet.setClaim("azp", request.getAuthorizationReqDTO().getConsumerKey());
         jwtClaimsSet.setExpirationTime(new Date(curTimeInMillis + lifetimeInMillis));
         jwtClaimsSet.setIssueTime(new Date(curTimeInMillis));
+        if(sid!=0){
+            jwtClaimsSet.setClaim("sid",sid);
+        }
         if (request.getAuthorizationReqDTO().getAuthTime() != 0) {
             jwtClaimsSet.setClaim("auth_time", request.getAuthorizationReqDTO().getAuthTime() / 1000);
         }
