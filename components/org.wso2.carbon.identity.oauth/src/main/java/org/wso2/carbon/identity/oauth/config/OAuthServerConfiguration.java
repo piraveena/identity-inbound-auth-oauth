@@ -74,7 +74,6 @@ import javax.xml.namespace.QName;
  * identity.xml
  */
 public class OAuthServerConfiguration {
-
     private static final String CONFIG_ELEM_OAUTH = "OAuth";
     // Grant Handler Classes
     private static final String AUTHORIZATION_CODE_GRANT_HANDLER_CLASS =

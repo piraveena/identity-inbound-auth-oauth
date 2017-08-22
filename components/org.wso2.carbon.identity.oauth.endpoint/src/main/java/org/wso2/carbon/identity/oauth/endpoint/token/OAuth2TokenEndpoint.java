@@ -29,6 +29,9 @@ import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.OAuthResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.core.model.IdentityCookieConfig;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.oauth.IdentityOAuthAdminException;
 import org.wso2.carbon.identity.oauth.common.OAuth2ErrorCodes;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
@@ -42,6 +45,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
 import org.wso2.carbon.identity.oauth2.model.CarbonOAuthTokenRequest;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -66,6 +70,14 @@ public class OAuth2TokenEndpoint {
     @Produces("application/json")
     public Response issueAccessToken(@Context HttpServletRequest request,
                                      MultivaluedMap<String, String> paramMap) throws OAuthSystemException {
+
+
+//        Cookie[] array_cookie=request.getCookies();
+//        log.info("lengh of cookie: "+ array_cookie.length);
+//
+//        for(Cookie cookie: array_cookie){
+//            log.info(cookie.getName());
+//        }
 
         try {
             PrivilegedCarbonContext.startTenantFlow();
@@ -265,6 +277,11 @@ public class OAuth2TokenEndpoint {
         tokenReqDTO.setScope(oauthRequest.getScopes().toArray(new String[oauthRequest.getScopes().size()]));
         tokenReqDTO.setTenantDomain(oauthRequest.getTenantDomain());
         tokenReqDTO.setPkceCodeVerifier(oauthRequest.getPkceCodeVerifier());
+
+        // Set all request parameters to the OAuth2AccessTokenReqDTO
+        tokenReqDTO.setRequestParameters(oauthRequest.getRequestParameters());
+        // Set all request headers to the OAuth2AccessTokenReqDTO
+        tokenReqDTO.setHttpRequestHeaders(oauthRequest.getHttpRequestHeaders());
 
         // Check the grant type and set the corresponding parameters
         if (GrantType.AUTHORIZATION_CODE.toString().equals(grantType)) {

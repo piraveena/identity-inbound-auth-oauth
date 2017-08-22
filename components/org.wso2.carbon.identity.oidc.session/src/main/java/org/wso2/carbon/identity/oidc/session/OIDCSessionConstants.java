@@ -41,6 +41,7 @@ public class OIDCSessionConstants {
     public static class OIDCEndpoints {
         public static final String OIDC_SESSION_IFRAME_ENDPOINT = "/oidc/checksession";
         public static final String OIDC_LOGOUT_ENDPOINT = "/oidc/logout";
+        public static final String OIDC_BC_LOGOUT_ENDPOINT = "/oidc/bclogout";
     }
 
     private OIDCSessionConstants() {

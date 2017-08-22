@@ -69,6 +69,7 @@ public class OIDCSessionIFrameServlet extends HttpServlet {
         valuesMap.put(CLIENT_ORIGIN_PLACE_HOLDER, clientOrigin);
 
         StrSubstitutor substitutor = new StrSubstitutor(valuesMap);
+       // log.info(opIFrame.toString());
         return substitutor.replace(opIFrame.toString());
     }
 

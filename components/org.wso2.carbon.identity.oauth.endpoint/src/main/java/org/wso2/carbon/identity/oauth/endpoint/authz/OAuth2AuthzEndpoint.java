@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.identity.oauth.endpoint.authz;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -61,6 +62,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2ClientValidationResponseDTO;
 import org.wso2.carbon.identity.oauth2.model.CarbonOAuthAuthzRequest;
+import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 import org.wso2.carbon.identity.oauth2.model.OAuth2Parameters;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
@@ -106,6 +108,8 @@ public class OAuth2AuthzEndpoint {
     private static final String REDIRECT_URI = "redirect_uri";
     private static final String RESPONSE_MODE_FORM_POST = "form_post";
     private static final String RESPONSE_MODE = "response_mode";
+    private HttpRequestHeader[] httpRequestHeaders;
+
     @GET
     @Path("/")
     @Consumes("application/x-www-form-urlencoded")
@@ -770,6 +774,7 @@ public class OAuth2AuthzEndpoint {
         params.setResponseType(oauthRequest.getResponseType());
         params.setResponseMode(oauthRequest.getParam(RESPONSE_MODE));
         params.setScopes(oauthRequest.getScopes());
+        params.setScopes(oauthRequest.getScopes());
         if (params.getScopes() == null) { // to avoid null pointers
             Set<String> scopeSet = new HashSet<String>();
             scopeSet.add("");
@@ -1223,6 +1228,22 @@ public class OAuth2AuthzEndpoint {
 
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
+
+                //assigned sid to the session state. each session has a unique id.
+//                int sid=(int)(Math.random()*1000000 + 10000000L);
+                String[] idtoken=redirectURL.split("=")[1].split("\\.");
+
+
+                byte[] decodedBytes=Base64.decodeBase64(idtoken[1]);
+                String idToken=new String(decodedBytes);
+                log.info(idToken);
+                JSONObject token=new JSONObject(idToken);
+                int sid=token.getInt("sid");
+                log.info(sid);
+                log.info(decodedBytes);
+                sessionStateObj.setSidClaim(sid);
+
+
                 OIDCSessionManagementUtil.getSessionManager()
                                          .storeOIDCSessionState(opBrowserStateCookie.getValue(), sessionStateObj);
             } else { // browser session exists
@@ -1261,5 +1282,11 @@ public class OAuth2AuthzEndpoint {
 
         return redirectURL;
     }
+    public HttpRequestHeader[] getHttpRequestHeaders() {
+        return httpRequestHeaders;
+    }
+    public void setHttpRequestHeaders(HttpRequestHeader[] httpRequestHeaders) {
+        this.httpRequestHeaders = httpRequestHeaders;}
+
 
 }

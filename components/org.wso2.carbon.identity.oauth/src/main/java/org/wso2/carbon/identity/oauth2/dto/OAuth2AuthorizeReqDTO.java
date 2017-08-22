@@ -38,6 +38,7 @@ public class OAuth2AuthorizeReqDTO {
     private long authTime;
     private String essentialClaims;
 
+
     public String getEssentialClaims() {
         return essentialClaims;
     }

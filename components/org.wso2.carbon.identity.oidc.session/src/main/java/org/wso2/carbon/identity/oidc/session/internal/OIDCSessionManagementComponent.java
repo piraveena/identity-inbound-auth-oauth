@@ -24,6 +24,7 @@ import org.eclipse.equinox.http.helper.ContextPathServletAdaptor;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
+import org.wso2.carbon.identity.oidc.session.servlet.OIDCBackChannelLogoutServlet;
 import org.wso2.carbon.identity.oidc.session.servlet.OIDCLogoutServlet;
 import org.wso2.carbon.identity.oidc.session.servlet.OIDCSessionIFrameServlet;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -43,6 +44,7 @@ public class OIDCSessionManagementComponent {
     private static final Log log = LogFactory.getLog(OIDCSessionManagementComponent.class);
 
     protected void activate(ComponentContext context) {
+        log.info("test");
 
         HttpService httpService = OIDCSessionManagementComponentServiceHolder.getHttpService();
 
@@ -50,8 +52,10 @@ public class OIDCSessionManagementComponent {
         Servlet sessionIFrameServlet = new ContextPathServletAdaptor(new OIDCSessionIFrameServlet(),
                                                                      OIDCSessionConstants.OIDCEndpoints.OIDC_SESSION_IFRAME_ENDPOINT);
         try {
+
             httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_SESSION_IFRAME_ENDPOINT,
                                         sessionIFrameServlet, null, null);
+            log.info("test OIDC_SESSION_IFRAME_ENDPOINT");
         } catch (Exception e) {
             String msg = "Error when registering OIDC Session IFrame Servlet via the HttpService.";
             log.error(msg, e);
@@ -63,6 +67,7 @@ public class OIDCSessionManagementComponent {
         try {
             httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_LOGOUT_ENDPOINT, logoutServlet, null,
                                         null);
+            log.info("test OIDC_LOGOUT_ENDPOINT");
         } catch (Exception e) {
             String msg = "Error when registering OIDC Logout Servlet via the HttpService.";
             log.error(msg, e);
@@ -70,6 +75,23 @@ public class OIDCSessionManagementComponent {
         }
         if (log.isDebugEnabled()) {
             log.info("OIDC Session Management bundle is activated");
+        }
+
+        //oidc back channel logout
+        Servlet bclogoutServlet=new ContextPathServletAdaptor(new OIDCBackChannelLogoutServlet(),OIDCSessionConstants
+                .OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT );
+        try {
+            log.info("test before OIDC_BC_LOGOUT_ENDPOINT");
+            httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT, bclogoutServlet,
+                    null,null);
+            log.info("test after OIDC_BC_LOGOUT_ENDPOINT");
+        } catch (Exception e) {
+            String msg = "Error when registering OIDC back-channel Logout Servlet via the HttpService.";
+            log.error(msg, e);
+            throw new RuntimeException(msg, e);
+        }
+        if (log.isDebugEnabled()) {
+            log.info("OIDC back-channel logout bundle is activated");
         }
     }
 

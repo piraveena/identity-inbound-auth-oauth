@@ -25,13 +25,17 @@ import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.utils.OAuthUtils;
 import org.apache.oltu.oauth2.common.validators.OAuthValidator;
+import javax.servlet.http.Cookie;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+
+//import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil
 
 /**
  * CarbonOAuthTokenRequest holds all OAuth token request parameters.
@@ -45,6 +49,7 @@ public class CarbonOAuthTokenRequest extends OAuthTokenRequest {
     private String tenantDomain;
     private String pkceCodeVerifier;
     private RequestParameter[] requestParameters;
+    private HttpRequestHeader[] httpRequestHeaders;
 
     /**
      * Constructs CarbonOAuthTokenRequest from the given HttpServletRequest
@@ -71,6 +76,38 @@ public class CarbonOAuthTokenRequest extends OAuthTokenRequest {
             }
             requestParameters =
                     requestParameterList.toArray(new RequestParameter[requestParameterList.size()]);
+        }
+
+
+
+ Cookie[] cookies=request.getCookies();
+        if(cookies!=null) {
+            int z= cookies.length;
+
+            for (Cookie cookie : cookies) {
+                String x = cookie.getName();
+                String y = cookie.getValue();
+                log.info(x + y);
+            }
+        }
+        // Set all http headers
+        Enumeration headerNames = request.getHeaderNames();
+        if (headerNames != null) {
+            List<HttpRequestHeader> httpHeaderList = new ArrayList<>();
+            while (headerNames.hasMoreElements()) {
+                String headerName = (String) headerNames.nextElement();
+                // since it is possible for some headers to have multiple values let's add them all.
+                Enumeration headerValues = request.getHeaders(headerName);
+                List<String> headerValueList = new ArrayList<>();
+                if (headerValues != null) {
+                    while (headerValues.hasMoreElements()) {
+                        headerValueList.add((String) headerValues.nextElement());
+                    }
+                }
+                httpHeaderList.add(
+                        new HttpRequestHeader(headerName, headerValueList.toArray(new String[headerValueList.size()])));
+            }
+            httpRequestHeaders = httpHeaderList.toArray(new HttpRequestHeader[httpHeaderList.size()]);
         }
     }
 
@@ -157,6 +194,10 @@ public class CarbonOAuthTokenRequest extends OAuthTokenRequest {
      */
     public String getPkceCodeVerifier() {
         return pkceCodeVerifier;
+    }
+
+    public HttpRequestHeader[] getHttpRequestHeaders() {
+        return httpRequestHeaders;
     }
 
 }

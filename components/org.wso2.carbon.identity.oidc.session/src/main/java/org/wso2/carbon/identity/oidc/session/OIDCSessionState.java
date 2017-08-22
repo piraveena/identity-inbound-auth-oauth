@@ -33,6 +33,18 @@ public class OIDCSessionState implements Serializable {
     private Set<String> sessionParticipants = new HashSet<>();
     private boolean isAuthenticated;
     private boolean addSessionState;
+    private int sid;
+
+
+    public void setSidClaim(int sid) {
+
+        this.sid = sid;
+    }
+
+    public int getSidClaim() {
+
+        return sid;
+    }
 
     /**
      * Returns authenticated user identifier

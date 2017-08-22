@@ -163,11 +163,13 @@ public class OIDCSessionManagementUtil {
         return null;
     }
 
+
+
     /**
      * Adds the browser state cookie to the response
      *
      * @param response
-     * @return Cookie
+     * @return Cookiehttps://localhost:9443/oauth2/authorize?response_type=id_token&client_id=VBvfRCuTbAxZdfdNlpOnYUAzE6Ya&nonce=CqsU9wZlQIYGUB86&redirect_uri=http://localhost:8080/playground2/oauth2client&scope=openid
      */
     public static Cookie addOPBrowserStateCookie(HttpServletResponse response) {
 
