@@ -60,6 +60,7 @@ import org.wso2.carbon.identity.oauth.cache.OAuthCache;
 import org.wso2.carbon.identity.oauth.cache.OAuthCacheKey;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
+import org.wso2.carbon.identity.oauth2.ClaimAdder;
 import org.wso2.carbon.identity.oauth2.IDTokenValidationFailureException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.authz.OAuthAuthzReqMessageContext;
@@ -74,8 +75,10 @@ import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
+import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.identity.sample.ClaimAdderImp;
 
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 
@@ -340,6 +343,9 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
                        sid=(int)(Math.random()*1000000 + 10000000L);
 
                    }
+//                   else{
+//                       OIDCSessionManager sessionManager=
+//                   }
                }
            }
 
@@ -445,6 +451,18 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         if (JWSAlgorithm.NONE.getName().equals(signatureAlgorithm.getName())) {
             return new PlainJWT(jwtClaimsSet).serialize();
         }
+
+
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders!=null){
+            for (ClaimAdder claimAdder : claimAdders) {
+                jwtClaimsSet.setClaim(claimAdder.getName(),claimAdder.getValue());
+
+            }
+
+        }
+
+
         return signJWT(jwtClaimsSet, request);
     }
 

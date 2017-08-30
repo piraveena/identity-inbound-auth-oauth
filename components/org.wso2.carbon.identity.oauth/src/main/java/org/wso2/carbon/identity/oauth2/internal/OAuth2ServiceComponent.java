@@ -30,6 +30,7 @@ import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.util.IdentityCoreInitializedEvent;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
+import org.wso2.carbon.identity.oauth2.ClaimAdder;
 import org.wso2.carbon.identity.oauth2.OAuth2ScopeService;
 import org.wso2.carbon.identity.oauth2.OAuth2Service;
 import org.wso2.carbon.identity.oauth2.OAuth2TokenValidationService;
@@ -44,6 +45,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @scr.component name="identity.oauth2.component" immediate="true"
@@ -59,10 +62,14 @@ import java.sql.SQLException;
  * @scr.reference name="registry.service"
  * interface="org.wso2.carbon.registry.core.service.RegistryService" cardinality="1..1"
  * policy="dynamic" bind="setRegistryService" unbind="unsetRegistryService"
+ * @scr.reference name="ClaimAdder;"
+ * interface="org.wso2.carbon.identity.oauth2.ClaimAdder" cardinality="0..n"
+ * policy="dynamic" bind="setClaimAdder" unbind="unsetClaimAdder"
  */
 public class OAuth2ServiceComponent {
     private static Log log = LogFactory.getLog(OAuth2ServiceComponent.class);
     private static BundleContext bundleContext;
+    private static List<ClaimAdder> claimList=new ArrayList<>();
 
     protected void activate(ComponentContext context) {
         int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
@@ -84,6 +91,8 @@ public class OAuth2ServiceComponent {
         } else {
             log.error("TenantMgtListener could not be registered");
         }
+        //adding claimList to ServiceComponentHolder
+        OAuth2ServiceComponentHolder.setClaimAdders(claimList);
         // exposing server configuration as a service 
         OAuthServerConfiguration oauthServerConfig = OAuthServerConfiguration.getInstance();
         bundleContext.registerService(OAuthServerConfiguration.class.getName(), oauthServerConfig, null);
@@ -213,4 +222,24 @@ public class OAuth2ServiceComponent {
         }
         OAuth2ServiceComponentHolder.setRegistryService(null);
     }
+
+    protected void setClaimAdder(ClaimAdder claimAdder) {
+        log.info("********************ClaimAdder Service binded******************");
+
+        if (log.isDebugEnabled()) {
+            log.debug("setting claim adder service");
+        }
+        claimList.add(claimAdder);
+
+    }
+
+    protected void unsetClaimAdder(ClaimAdder claimAdder) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("unsetting claim adder service");
+        }
+        OAuth2ServiceComponentHolder.setClaimAdders(null);
+
+    }
+
 }

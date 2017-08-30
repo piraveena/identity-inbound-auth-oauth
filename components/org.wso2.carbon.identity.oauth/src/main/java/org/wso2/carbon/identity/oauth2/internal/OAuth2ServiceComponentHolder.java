@@ -19,7 +19,11 @@
 package org.wso2.carbon.identity.oauth2.internal;
 
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
+import org.wso2.carbon.identity.oauth2.ClaimAdder;
 import org.wso2.carbon.registry.core.service.RegistryService;
+
+import java.util.List;
+
 
 /**
  * OAuth2 Service component data holder
@@ -29,6 +33,7 @@ public class OAuth2ServiceComponentHolder {
     private static ApplicationManagementService applicationMgtService;
     private static boolean pkceEnabled = false;
     private static RegistryService registryService;
+    private static List<ClaimAdder> claimAdder;
     private OAuth2ServiceComponentHolder(){
 
     }
@@ -51,19 +56,19 @@ public class OAuth2ServiceComponentHolder {
         OAuth2ServiceComponentHolder.applicationMgtService = applicationMgtService;
     }
 
-    public static boolean isPkceEnabled() {
-        return pkceEnabled;
-    }
+    public static boolean isPkceEnabled() {return pkceEnabled;}
 
-    public static void setPkceEnabled(boolean pkceEnabled) {
-        OAuth2ServiceComponentHolder.pkceEnabled = pkceEnabled;
-    }
+    public static void setPkceEnabled(boolean pkceEnabled) {OAuth2ServiceComponentHolder.pkceEnabled = pkceEnabled;}
 
-    public static RegistryService getRegistryService() {
-        return registryService;
-    }
+    public static RegistryService getRegistryService() {return registryService;}
 
     public static void setRegistryService(RegistryService registryService) {
+
         OAuth2ServiceComponentHolder.registryService = registryService;
     }
+
+    public static List<ClaimAdder> getClaimAdders() {return claimAdder;}
+
+    public static void setClaimAdders(List<ClaimAdder> claimAdder) {OAuth2ServiceComponentHolder.claimAdder=claimAdder;}
+
 }

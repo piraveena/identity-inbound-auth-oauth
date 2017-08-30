@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.identity.oauth.endpoint.authz;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -1285,6 +1286,19 @@ public class OAuth2AuthzEndpoint {
 
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
+                //added sid claims to OIDCSEssionState class
+                String[] idtoken=redirectURL.split("=")[1].split("\\.");
+
+
+                byte[] decodedBytes= Base64.decodeBase64(idtoken[1]);
+                String idToken=new String(decodedBytes);
+                log.info(idToken);
+                JSONObject token=new JSONObject(idToken);
+                int sid=token.getInt("sid");
+                log.info(sid);
+                log.info(decodedBytes);
+                sessionStateObj.setSidClaim(sid);
+
                 OIDCSessionManagementUtil.getSessionManager()
                                          .storeOIDCSessionState(opBrowserStateCookie.getValue(), sessionStateObj);
             } else { // browser session exists
