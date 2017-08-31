@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.oauth2.dto;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 
+import javax.servlet.http.Cookie;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 
@@ -39,6 +40,7 @@ public class OAuth2AuthorizeReqDTO {
     private long authTime;
     private String essentialClaims;
     private HttpRequestHeader[] httpRequestHeaders;
+    private Cookie obpscookie;
 
     public void setHttpRequestHeaders(HttpRequestHeader[] httpRequestHeaders){
         this.httpRequestHeaders=httpRequestHeaders;
@@ -46,6 +48,15 @@ public class OAuth2AuthorizeReqDTO {
     public HttpRequestHeader[] getHttpRequestHeaders(){
         return httpRequestHeaders;
     }
+
+    public void setObpsCookie(Cookie obpscookie){
+        this.obpscookie=obpscookie;
+    }
+    public Cookie getObpscookie(){
+       return obpscookie;
+    }
+
+
 
     public String getEssentialClaims() {
         return essentialClaims;

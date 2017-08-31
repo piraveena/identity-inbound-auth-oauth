@@ -19,11 +19,14 @@
 package org.wso2.carbon.identity.oidc.session.internal;
 
 import org.osgi.service.http.HttpService;
+import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
+import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
 import org.wso2.carbon.user.core.service.RealmService;
 
 public class OIDCSessionManagementComponentServiceHolder {
     private static HttpService httpService;
     private static RealmService realmService;
+    private static OIDCSessionState oidcSessionState;
 
     private OIDCSessionManagementComponentServiceHolder() {
 
@@ -40,7 +43,14 @@ public class OIDCSessionManagementComponentServiceHolder {
         OIDCSessionManagementComponentServiceHolder.realmService = realmService;
     }
 
+
     public static RealmService getRealmService() {
         return realmService;
     }
+
+    public static void setSessionState(OIDCSessionState oidcSessionState){
+
+        OIDCSessionManagementComponentServiceHolder.oidcSessionState=oidcSessionState;
+    }
+    public static OIDCSessionState getOidcSessionState(){return oidcSessionState;}
 }

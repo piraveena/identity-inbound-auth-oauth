@@ -24,6 +24,7 @@ import org.eclipse.equinox.http.helper.ContextPathServletAdaptor;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
+import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
 import org.wso2.carbon.identity.oidc.session.servlet.OIDCLogoutServlet;
 import org.wso2.carbon.identity.oidc.session.servlet.OIDCSessionIFrameServlet;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -60,6 +61,7 @@ public class OIDCSessionManagementComponent {
 
         Servlet logoutServlet = new ContextPathServletAdaptor(new OIDCLogoutServlet(),
                                                               OIDCSessionConstants.OIDCEndpoints.OIDC_LOGOUT_ENDPOINT);
+
         try {
             httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_LOGOUT_ENDPOINT, logoutServlet, null,
                                         null);

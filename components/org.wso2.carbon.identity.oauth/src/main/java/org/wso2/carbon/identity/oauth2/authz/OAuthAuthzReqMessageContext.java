@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.oauth2.authz;
 import org.wso2.carbon.identity.oauth.common.OAuthConstants;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeReqDTO;
 
+
 import java.util.Properties;
 
 public class OAuthAuthzReqMessageContext {

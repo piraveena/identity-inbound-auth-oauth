@@ -17,26 +17,24 @@
  */
 package org.wso2.carbon.identity.oauth2;
 
+import com.nimbusds.jwt.JWTClaimsSet;
+import org.wso2.carbon.identity.oauth2.authz.OAuthAuthzReqMessageContext;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
+import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
+import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
+
+import java.util.Map;
+
 public interface ClaimAdder {
 
     /**
-     * Add new claim to ID token
+     *
+     * @param request
+     * @param tokenRespDTO
+     * @return
+     * @throws IdentityOAuth2Exception
      */
-    void setName();
-
-    /**
-     * Add value to the claim
-     */
-    void setValue();
-
-    /**
-     * getting claim's name
-     */
-    String getName();
-
-    /**
-     * getting claim's value
-     */
-    Object getValue();
+    Map<String, Object> getAdditionalClaims(OAuthAuthzReqMessageContext request, OAuth2AuthorizeRespDTO tokenRespDTO)
+            throws IdentityOAuth2Exception;
 
 }

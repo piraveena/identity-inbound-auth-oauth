@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.oidc.session;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,9 +37,12 @@ public class OIDCSessionState implements Serializable {
     private boolean isAuthenticated;
     private boolean addSessionState;
     private int sid;
+    private static Log log= LogFactory.getLog(OIDCSessionState.class);
 
 
     public void setSidClaim(int sid) {
+
+       log.info("<<<<<<OIDC sessionstate: "+ sid);
 
         this.sid = sid;
     }

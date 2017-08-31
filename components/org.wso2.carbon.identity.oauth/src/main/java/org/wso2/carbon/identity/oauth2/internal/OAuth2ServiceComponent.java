@@ -62,7 +62,7 @@ import java.util.List;
  * @scr.reference name="registry.service"
  * interface="org.wso2.carbon.registry.core.service.RegistryService" cardinality="1..1"
  * policy="dynamic" bind="setRegistryService" unbind="unsetRegistryService"
- * @scr.reference name="ClaimAdder;"
+ * @scr.reference name="ClaimAdder"
  * interface="org.wso2.carbon.identity.oauth2.ClaimAdder" cardinality="0..n"
  * policy="dynamic" bind="setClaimAdder" unbind="unsetClaimAdder"
  */
@@ -72,6 +72,7 @@ public class OAuth2ServiceComponent {
     private static List<ClaimAdder> claimList=new ArrayList<>();
 
     protected void activate(ComponentContext context) {
+        log.info("*******OAuth2service component activated*******");
         int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
         OAuth2Util.initiateOIDCScopes(tenantId);
         OAuth2Util.initTokenExpiryTimesOfSps(tenantId);

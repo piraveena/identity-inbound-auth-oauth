@@ -78,8 +78,6 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
-import org.wso2.identity.sample.ClaimAdderImp;
-
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeader;
 
 import java.security.Key;
@@ -206,7 +204,7 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
                     String fqdnUsername = request.getAuthorizedUser().toString();
                     try {
                         UserStoreManager usm = IdentityTenantUtil.getRealm(tenantDomain,
-                                                                           fqdnUsername).getUserStoreManager();
+                                fqdnUsername).getUserStoreManager();
                         subject = usm.getSecondaryUserStoreManager(userStore).getUserClaimValue(username, subjectClaim, null);
                         if (StringUtils.isBlank(subject)) {
                             subject = request.getAuthorizedUser().getAuthenticatedSubjectIdentifier();
@@ -222,7 +220,7 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
                         if (e.getMessage().contains("UserNotFound")) {
                             if (log.isDebugEnabled()) {
                                 log.debug("User " + username + " not found in user store " + userStore + " in tenant " +
-                                          tenantDomain);
+                                        tenantDomain);
                             }
                             subject = request.getAuthorizedUser().toString();
                         } else {
@@ -331,25 +329,6 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
             throws IdentityOAuth2Exception {
         int sid=0;
 
-        HttpRequestHeader[] requestHeaders=request.getAuthorizationReqDTO().getHttpRequestHeaders();
-        for( HttpRequestHeader header: requestHeaders){
-                    String name=header.getName();
-                    log.info(name);
-           if(header.getName().equals("cookie")){
-               String[] values=header.getValue();
-               log.info(values);
-               for(String value:values){
-                   if(!value.contains("opbs")){
-                       sid=(int)(Math.random()*1000000 + 10000000L);
-
-                   }
-//                   else{
-//                       OIDCSessionManager sessionManager=
-//                   }
-               }
-           }
-
-        }
 
         String tenantDomain = request.getAuthorizationReqDTO().getTenantDomain();
         IdentityProvider identityProvider = getResidentIdp(tenantDomain);
@@ -426,9 +405,9 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         jwtClaimsSet.setClaim("azp", request.getAuthorizationReqDTO().getConsumerKey());
         jwtClaimsSet.setExpirationTime(new Date(curTimeInMillis + lifetimeInMillis));
         jwtClaimsSet.setIssueTime(new Date(curTimeInMillis));
-        if(sid!=0){
-            jwtClaimsSet.setClaim("sid",sid);
-        }
+//        if(sid!=0){
+//            jwtClaimsSet.setClaim("sid",sid);
+//        }
         if (request.getAuthorizationReqDTO().getAuthTime() != 0) {
             jwtClaimsSet.setClaim("auth_time", request.getAuthorizationReqDTO().getAuthTime() / 1000);
         }
@@ -452,16 +431,16 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
             return new PlainJWT(jwtClaimsSet).serialize();
         }
 
-
         List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
         if (claimAdders!=null){
+            log.info("*****claim adder found*****"+ claimAdders.size());
+
             for (ClaimAdder claimAdder : claimAdders) {
-                jwtClaimsSet.setClaim(claimAdder.getName(),claimAdder.getValue());
-
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(request, tokenRespDTO);
+                //Add debug logs
+                jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
             }
-
         }
-
 
         return signJWT(jwtClaimsSet, request);
     }

@@ -647,7 +647,9 @@ public class OAuth2AuthzEndpoint {
         String responseType = oauth2Params.getResponseType();
 
         // authorizing the request
-        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,requestHeaderHandler);
+      //  OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,requestHeaderHandler);
+        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,request);
+
 
         if (authzRespDTO != null && authzRespDTO.getErrorCode() == null) {
             OAuthASResponse.OAuthAuthorizationResponseBuilder builder = OAuthASResponse
@@ -1121,8 +1123,10 @@ public class OAuth2AuthzEndpoint {
      * @param oauth2Params
      * @return
      */
+//    private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
+//            , SessionDataCacheEntry sessionDataCacheEntry,HTTPRequestHeaderHandler httpRequestHeaderHandler) {
     private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
-            , SessionDataCacheEntry sessionDataCacheEntry,HTTPRequestHeaderHandler httpRequestHeaderHandler) {
+            , SessionDataCacheEntry sessionDataCacheEntry,HttpServletRequest request) {
 
         OAuth2AuthorizeReqDTO authzReqDTO = new OAuth2AuthorizeReqDTO();
         authzReqDTO.setCallbackUrl(oauth2Params.getRedirectURI());
@@ -1137,7 +1141,9 @@ public class OAuth2AuthzEndpoint {
         authzReqDTO.setTenantDomain(oauth2Params.getTenantDomain());
         authzReqDTO.setAuthTime(oauth2Params.getAuthTime());
         authzReqDTO.setEssentialClaims(oauth2Params.getEssentialClaims());
-        authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
+       // authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
+        authzReqDTO.setObpsCookie(OIDCSessionManagementUtil.getOPBrowserStateCookie(request));
+
         return EndpointUtil.getOAuth2Service().authorize(authzReqDTO);
     }
 
@@ -1286,18 +1292,26 @@ public class OAuth2AuthzEndpoint {
 
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
-                //added sid claims to OIDCSEssionState class
-                String[] idtoken=redirectURL.split("=")[1].split("\\.");
+
+                if(redirectURL!=null) {
+                    //added sid claims to OIDCSEssionState class
+                    String[] idtoken = redirectURL.split("=")[1].split("\\.");
 
 
-                byte[] decodedBytes= Base64.decodeBase64(idtoken[1]);
-                String idToken=new String(decodedBytes);
-                log.info(idToken);
-                JSONObject token=new JSONObject(idToken);
-                int sid=token.getInt("sid");
-                log.info(sid);
-                log.info(decodedBytes);
-                sessionStateObj.setSidClaim(sid);
+                    byte[] decodedBytes = Base64.decodeBase64(idtoken[1]);
+                    String idToken = new String(decodedBytes);
+                    log.info(idToken);
+                    JSONObject token = new JSONObject(idToken);
+                log.info(token.has("sid"));
+                if(token.has("sid")) {
+                    Integer sid = token.getInt("sid");
+                    if (sid != null) {
+                        log.info(sid);
+                        log.info(decodedBytes);
+                        sessionStateObj.setSidClaim(sid);
+                    }
+                }
+                }
 
                 OIDCSessionManagementUtil.getSessionManager()
                                          .storeOIDCSessionState(opBrowserStateCookie.getValue(), sessionStateObj);
