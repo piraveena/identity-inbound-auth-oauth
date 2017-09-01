@@ -40,20 +40,33 @@ public class OAuth2AuthorizeReqDTO {
     private long authTime;
     private String essentialClaims;
     private HttpRequestHeader[] httpRequestHeaders;
-    private Cookie obpscookie;
+  //  private Cookie obpscookie;
+    private Cookie[] cookies;
 
-    public void setHttpRequestHeaders(HttpRequestHeader[] httpRequestHeaders){
-        this.httpRequestHeaders=httpRequestHeaders;
+    public void setHttpRequestHeaders(HttpRequestHeader[] httpRequestHeaders) {
+
+        this.httpRequestHeaders = httpRequestHeaders;
     }
-    public HttpRequestHeader[] getHttpRequestHeaders(){
+
+    public HttpRequestHeader[] getHttpRequestHeaders() {
+
         return httpRequestHeaders;
     }
 
-    public void setObpsCookie(Cookie obpscookie){
-        this.obpscookie=obpscookie;
+    //    public void setObpsCookie(Cookie obpscookie){
+//        this.obpscookie=obpscookie;
+//    }
+//    public Cookie getObpscookie(){
+//       return obpscookie;
+//    }
+    public void setCookie(Cookie[] cookies) {
+
+        this.cookies = cookies;
     }
-    public Cookie getObpscookie(){
-       return obpscookie;
+
+    public Cookie[] getCookie() {
+
+        return cookies;
     }
 
 

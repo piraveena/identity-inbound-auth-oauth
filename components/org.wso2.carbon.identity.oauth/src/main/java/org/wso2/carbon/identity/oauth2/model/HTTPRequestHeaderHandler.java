@@ -1,5 +1,6 @@
 package org.wso2.carbon.identity.oauth2.model;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -9,11 +10,14 @@ import java.util.List;
  * Created by piraveena on 8/22/17.
  */
 public class HTTPRequestHeaderHandler {
-    private  HttpRequestHeader[] httpRequestHeaders;
 
-    public HTTPRequestHeaderHandler(HttpServletRequest request){
+    private HttpRequestHeader[] httpRequestHeaders;
+    private Cookie[] cookies;
+
+    public HTTPRequestHeaderHandler(HttpServletRequest request) {
 
         //set all http headers
+        cookies = request.getCookies();
         Enumeration headerNames = request.getHeaderNames();
         if (headerNames != null) {
             List<HttpRequestHeader> httpHeaderList = new ArrayList<>();
@@ -31,11 +35,22 @@ public class HTTPRequestHeaderHandler {
                         new HttpRequestHeader(headerName, headerValueList.toArray(new String[headerValueList.size()])));
             }
             httpRequestHeaders = httpHeaderList.toArray(new HttpRequestHeader[httpHeaderList.size()]);
+
+
         }
     }
 
-    public HttpRequestHeader[] getHttpRequestHeaders(){
+    public HttpRequestHeader[] getHttpRequestHeaders() {
+
         return httpRequestHeaders;
+    }
+
+    public Cookie[] getCookies() {
+
+        if (cookies != null) {
+            return cookies;
+        }
+        return null;
     }
 
 }

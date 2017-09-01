@@ -647,8 +647,8 @@ public class OAuth2AuthzEndpoint {
         String responseType = oauth2Params.getResponseType();
 
         // authorizing the request
-      //  OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,requestHeaderHandler);
-        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,request);
+       OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,requestHeaderHandler);
+     //   OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,request);
 
 
         if (authzRespDTO != null && authzRespDTO.getErrorCode() == null) {
@@ -1123,10 +1123,10 @@ public class OAuth2AuthzEndpoint {
      * @param oauth2Params
      * @return
      */
-//    private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
-//            , SessionDataCacheEntry sessionDataCacheEntry,HTTPRequestHeaderHandler httpRequestHeaderHandler) {
     private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
-            , SessionDataCacheEntry sessionDataCacheEntry,HttpServletRequest request) {
+            , SessionDataCacheEntry sessionDataCacheEntry,HTTPRequestHeaderHandler httpRequestHeaderHandler) {
+//    private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
+//            , SessionDataCacheEntry sessionDataCacheEntry,HttpServletRequest request) {
 
         OAuth2AuthorizeReqDTO authzReqDTO = new OAuth2AuthorizeReqDTO();
         authzReqDTO.setCallbackUrl(oauth2Params.getRedirectURI());
@@ -1141,8 +1141,11 @@ public class OAuth2AuthzEndpoint {
         authzReqDTO.setTenantDomain(oauth2Params.getTenantDomain());
         authzReqDTO.setAuthTime(oauth2Params.getAuthTime());
         authzReqDTO.setEssentialClaims(oauth2Params.getEssentialClaims());
-       // authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
-        authzReqDTO.setObpsCookie(OIDCSessionManagementUtil.getOPBrowserStateCookie(request));
+
+        authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
+        authzReqDTO.setCookie(httpRequestHeaderHandler.getCookies());
+
+       // authzReqDTO.setObpsCookie(OIDCSessionManagementUtil.getOPBrowserStateCookie(request));
 
         return EndpointUtil.getOAuth2Service().authorize(authzReqDTO);
     }
