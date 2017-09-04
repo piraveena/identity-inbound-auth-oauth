@@ -36,6 +36,7 @@ import org.wso2.carbon.identity.oauth2.OAuth2TokenValidationService;
 import org.wso2.carbon.identity.oauth2.dao.SQLQueries;
 import org.wso2.carbon.identity.oauth2.listener.TenantCreationEventListener;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
+import org.wso2.carbon.identity.openidconnect.ClaimAdder;
 import org.wso2.carbon.identity.user.store.configuration.listener.UserStoreConfigListener;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
@@ -44,6 +45,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @scr.component name="identity.oauth2.component" immediate="true"
@@ -59,12 +62,17 @@ import java.sql.SQLException;
  * @scr.reference name="registry.service"
  * interface="org.wso2.carbon.registry.core.service.RegistryService" cardinality="1..1"
  * policy="dynamic" bind="setRegistryService" unbind="unsetRegistryService"
+ * @scr.reference name="ClaimAdder"
+ * interface="org.wso2.carbon.identity.openidconnect.ClaimAdder" cardinality="0..n"
+ * policy="dynamic" bind="setClaimAdder" unbind="unsetClaimAdder"
  */
 public class OAuth2ServiceComponent {
     private static Log log = LogFactory.getLog(OAuth2ServiceComponent.class);
     private static BundleContext bundleContext;
+    private static List<ClaimAdder> claimList=new ArrayList<>();
 
     protected void activate(ComponentContext context) {
+        log.info("********new activated*****");
         int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
         OAuth2Util.initiateOIDCScopes(tenantId);
         TenantCreationEventListener scopeTenantMgtListener = new TenantCreationEventListener();
@@ -211,5 +219,23 @@ public class OAuth2ServiceComponent {
             log.debug("UnSetting the Registry Service");
         }
         OAuth2ServiceComponentHolder.setRegistryService(null);
+    }
+    protected void setClaimAdder(ClaimAdder claimAdder) {
+        log.info("********************ClaimAdder Service binded******************");
+
+        if (log.isDebugEnabled()) {
+            log.debug("setting claim adder service");
+        }
+        claimList.add(claimAdder);
+
+    }
+
+    protected void unsetClaimAdder(ClaimAdder claimAdder) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("unsetting claim adder service");
+        }
+        OAuth2ServiceComponentHolder.setClaimAdders(null);
+
     }
 }

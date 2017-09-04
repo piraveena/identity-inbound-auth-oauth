@@ -63,6 +63,7 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
+import org.wso2.identity.sample.ClaimAdderImp;
 
 import javax.xml.namespace.QName;
 import java.security.Key;
@@ -399,6 +400,19 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         }
         if (acrValue != null) {
             jwtClaimsSet.setClaim("acr", "urn:mace:incommon:iap:silver");
+        }
+
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders!=null){
+            log.info("*****claim adder found*****"+ claimAdders.size());
+
+            for (ClaimAdder claimAdder : claimAdders) {
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(request, tokenRespDTO);
+                if(log.isDebugEnabled()){
+                    log.debug("New claim found"+ claimAdder.toString());
+                }
+                jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+            }
         }
 
         request.addProperty(OAuthConstants.ACCESS_TOKEN, tokenRespDTO.getAccessToken());

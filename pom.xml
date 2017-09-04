@@ -671,6 +671,9 @@
 
         <!--Test Dependencies-->
         <junit.version>4.12</junit.version>
+
+        <!--Sid claim adding service dependency-->
+        <extended-jit-associator.exp.pkg.version>1.0-SNAPSHOT</extended-jit-associator.exp.pkg.version>
     </properties>
 
 </project>
