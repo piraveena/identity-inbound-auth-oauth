@@ -1,9 +1,13 @@
 package org.wso2.carbon.identity.oidc.session.servlet;
 
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
+import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
+import org.wso2.carbon.identity.oidc.session.DefaultLogoutTokenBuilder;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
 import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
@@ -76,18 +80,19 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
-        Cookie obpscookie= OIDCSessionManagementUtil.getOPBrowserStateCookie(request);
-
-        String obpsCookieValue=obpscookie.getValue();
-
-
 
         log.info("OIDCBackChannelLogoutServlet: accessing get method ");
         log.info(request.toString());
         PrintWriter print=response.getWriter();
-        String sid=getSidClaim(getSessionState(obpsCookieValue));
-        print.write(sid);
-        removeSession(obpscookie,response);
+        try {
+            DefaultLogoutTokenBuilder logoutTokenBuilder=new DefaultLogoutTokenBuilder();
+           JWTClaimsSet logoutToken=logoutTokenBuilder.buildLogoutToken(request,response);
+
+        } catch (IdentityOAuth2Exception e) {
+           log.info("IdentityOAuthException");
+        } catch (InvalidOAuthClientException e) {
+            log.info("InvalidOAuthClientException");
+        }
 
     }
 

@@ -171,6 +171,8 @@ public class OAuthServerConfiguration {
     private OAuth2ScopeValidator oAuth2ScopeValidator;
     private Set<OAuth2ScopeValidator> oAuth2ScopeValidators = new HashSet<>();
     private Set<OAuth2ScopeHandler> oAuth2ScopeHandlers = new HashSet<>();
+    //logout token expiration time
+    private String openIDConnectBCLogoutTokenExpiration = "120";
     // property added to fix IDENTITY-4492 in backward compatible manner
     private boolean isJWTSignedWithSPKey = false;
     // property added to fix IDENTITY-4534 in backward compatible manner
@@ -185,6 +187,8 @@ public class OAuthServerConfiguration {
     // Property added to customize the token valued generation method. (IDENTITY-6139)
     private ValueGenerator tokenValueGenerator;
     private String tokenValueGeneratorClassName;
+
+
 
     private OAuthServerConfiguration() {
         buildOAuthServerConfiguration();
@@ -883,6 +887,14 @@ public class OAuthServerConfiguration {
      */
     public String getOpenIDConnectIDTokenExpiration() {
         return openIDConnectIDTokenExpiration;
+    }
+
+    /**
+     * returns the OpenIDConnec Back-channel logout token expiration time
+     * @return the Logout token expiration time
+     */
+    public String getOpenIDConnectBCLogoutTokenExpiration() {
+        return openIDConnectBCLogoutTokenExpiration;
     }
 
     public String getOpenIDConnectUserInfoEndpointClaimDialect() {
