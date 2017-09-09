@@ -86,7 +86,7 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
         PrintWriter print=response.getWriter();
         try {
             DefaultLogoutTokenBuilder logoutTokenBuilder=new DefaultLogoutTokenBuilder();
-           JWTClaimsSet logoutToken=logoutTokenBuilder.buildLogoutToken(request,response);
+           String logoutToken=logoutTokenBuilder.buildLogoutToken(request,response);
 
         } catch (IdentityOAuth2Exception e) {
            log.info("IdentityOAuthException");

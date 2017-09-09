@@ -18,6 +18,6 @@ public interface LogoutTokenBuilder {
      * @return
      * @throws IdentityOAuth2Exception
      */
-    public JWTClaimsSet buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
+    public String buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
             throws IdentityOAuth2Exception, InvalidOAuthClientException;
 }

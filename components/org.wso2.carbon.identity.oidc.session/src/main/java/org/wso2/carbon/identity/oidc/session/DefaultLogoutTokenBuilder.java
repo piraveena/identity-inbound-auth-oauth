@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,29 +39,30 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
     }
 
     @Override
-    public JWTClaimsSet buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
+    public String buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
             throws IdentityOAuth2Exception, InvalidOAuthClientException {
 
        // send logout token to all RPs
         OIDCSessionState sessionState = getSessionState(request);
-        ArrayList<String> audience = new ArrayList<String>();
-        for(String clientID:getSessionParticipants(sessionState)){
-            audience.add(clientID);
-        }
 
-        for(String clientIDofRP :getSessionParticipants(sessionState)) {
+
+        for(String clientID :getSessionParticipants(sessionState)) {
 
             String sub = sessionState.getAuthenticatedUser();
             String jti = UUID.randomUUID().toString();
 
             String iss = "https://localhost:9443/carbon/";
-
+            ArrayList<String> audience = new ArrayList<String>();
+            audience.add(clientID);
             long lifetimeInMillis = Integer.parseInt(config.getOpenIDConnectBCLogoutTokenExpiration()) * 1000;
             long curTimeInMillis = Calendar.getInstance().getTimeInMillis();
             Date iat = new Date(curTimeInMillis);
             String sid = getSidClaim(getSessionState(request));
-            JSONObject event = new JSONObject();
-            event.put("http://schemas.openid.net/event/backchannel-logout", new JSONObject());
+            Map<String,Object> eventMap=new HashMap<>();
+            eventMap.put("http://schemas.openid.net/event/backchannel-logout",new JSONObject());
+            JSONObject event = new JSONObject(eventMap);
+
+            //event.put("http://schemas.openid.net/event/backchannel-logout", new JSONObject());
 
             JWTClaimsSet jwtClaimsSet = new JWTClaimsSet();
             jwtClaimsSet.setSubject(sub);
@@ -73,7 +76,7 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
 
             boolean isJWTSignedWithSPKey = OAuthServerConfiguration.getInstance().isJWTSignedWithSPKey();
             String signingTenantDomain;
-            OAuthAppDO oAuthAppDO = OAuth2Util.getAppInformationByClientId(clientIDofRP);
+            OAuthAppDO oAuthAppDO = OAuth2Util.getAppInformationByClientId(clientID);
 
             if(isJWTSignedWithSPKey) {
 
@@ -85,7 +88,8 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
                 signingTenantDomain=oAuthAppDO.getUser().getTenantDomain();
             }
 
-            return jwtClaimsSet;
+            String logoutToken=OAuth2Util.signJWT(jwtClaimsSet,signatureAlgorithm,signingTenantDomain).serialize();
+            return logoutToken;
         }
     return null;
     }

@@ -46,6 +46,8 @@
 
     String consumerkey = request.getParameter("consumerkey");
     String callback = request.getParameter("callback");
+    //back-channel logout url
+    String bclogout=request.getParameter("bclogout");
     String applicationName = request.getParameter("application");
     String consumersecret = request.getParameter("consumersecret");
     String oauthVersion = request.getParameter("oauthVersion");
@@ -90,6 +92,8 @@
         app.setUserAccessTokenExpiryTime(Long.parseLong(userAccessTokenExpiryTime));
         app.setApplicationAccessTokenExpiryTime(Long.parseLong(applicationAccessTokenExpiryTime));
         app.setRefreshTokenExpiryTime(Long.parseLong(refreshTokenExpiryTime));
+        //adding back-channel logout
+        app.setBackChannelLogoutUrl(bclogout);
         String[] grantTypes = client.getAllowedOAuthGrantTypes();
         for (String grantType : grantTypes) {
             String grant = request.getParameter("grant_" + grantType);
