@@ -121,6 +121,9 @@
                     grants = "";
                 }
             }
+            if(app.getBackChannelLogoutUrl()==null){
+                app.setBackChannelLogoutUrl("");
+            }
         }
 
     } catch (Exception e) {

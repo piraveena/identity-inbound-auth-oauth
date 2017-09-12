@@ -46,6 +46,7 @@
 
     String applicationName = request.getParameter("application");
     String callback = request.getParameter("callback");
+    String backchannelLogoutUrl=request.getParameter("bclogout");
     String oauthVersion = request.getParameter("oauthVersion");
     String userAccessTokenExpiryTime = request.getParameter("userAccessTokenExpiryTime");
     String applicationAccessTokenExpiryTime = request.getParameter("applicationAccessTokenExpiryTime");
@@ -86,6 +87,7 @@
 		app.setUserAccessTokenExpiryTime(Long.parseLong(userAccessTokenExpiryTime));
 		app.setApplicationAccessTokenExpiryTime(Long.parseLong(applicationAccessTokenExpiryTime));
 		app.setRefreshTokenExpiryTime(Long.parseLong(refreshTokenExpiryTime));
+		app.setBackChannelLogoutUrl(backchannelLogoutUrl);
 
         String grants;
         StringBuffer buff = new StringBuffer();

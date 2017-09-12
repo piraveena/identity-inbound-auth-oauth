@@ -194,6 +194,7 @@ public class OAuthAdminService extends AbstractAdmin {
                 dto.setOauthConsumerKey(app.getOauthConsumerKey());
                 dto.setOauthConsumerSecret(app.getOauthConsumerSecret());
                 dto.setOAuthVersion(app.getOauthVersion());
+                dto.setBackChannelLogoutUrl(app.getBackChannelLogoutUrl());
                 dto.setGrantTypes(app.getGrantTypes());
                 dto.setPkceMandatory(app.isPkceMandatory());
                 dto.setPkceSupportPlain(app.isPkceSupportPlain());
@@ -230,6 +231,7 @@ public class OAuthAdminService extends AbstractAdmin {
                     throw new IdentityOAuthAdminException("Callback Url is required for Code or Implicit grant types");
                 }
                 app.setCallbackUrl(application.getCallbackUrl());
+                app.setBackChannelLogoutUrl(application.getBackChannelLogoutUrl());
                 if (application.getOauthConsumerKey() == null) {
                     app.setOauthConsumerKey(OAuthUtil.getRandomNumber());
                     app.setOauthConsumerSecret(OAuthUtil.getRandomNumber());
@@ -317,6 +319,7 @@ public class OAuthAdminService extends AbstractAdmin {
         oauthappdo.setOauthConsumerKey(consumerKey);
         oauthappdo.setOauthConsumerSecret(consumerAppDTO.getOauthConsumerSecret());
         oauthappdo.setCallbackUrl(consumerAppDTO.getCallbackUrl());
+        oauthappdo.setBackChannelLogoutUrl(consumerAppDTO.getBackChannelLogoutUrl());
         oauthappdo.setApplicationName(consumerAppDTO.getApplicationName());
         oauthappdo.setPkceMandatory(consumerAppDTO.getPkceMandatory());
         oauthappdo.setPkceSupportPlain(consumerAppDTO.getPkceSupportPlain());
