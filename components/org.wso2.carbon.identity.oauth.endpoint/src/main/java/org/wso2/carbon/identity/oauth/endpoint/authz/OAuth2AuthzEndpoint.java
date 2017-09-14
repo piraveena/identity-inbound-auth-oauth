@@ -18,6 +18,7 @@
 package org.wso2.carbon.identity.oauth.endpoint.authz;
 
 import com.nimbusds.jwt.SignedJWT;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -64,6 +65,7 @@ import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeReqDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AuthorizeRespDTO;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2ClientValidationResponseDTO;
 import org.wso2.carbon.identity.oauth2.model.CarbonOAuthAuthzRequest;
+import org.wso2.carbon.identity.oauth2.model.HttpRequestHeaderHandler;
 import org.wso2.carbon.identity.oauth2.model.OAuth2Parameters;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
@@ -635,11 +637,11 @@ public class OAuth2AuthzEndpoint {
 
         OAuthResponse oauthResponse = null;
         String responseType = oauth2Params.getResponseType();
-
+        //store request headers in the requesthandler class
+        HttpRequestHeaderHandler requestHeaderHandler=new HttpRequestHeaderHandler(request);
         // authorizing the request
-        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry);
-
-        if (authzRespDTO != null && authzRespDTO.getErrorCode() == null) {
+        OAuth2AuthorizeRespDTO authzRespDTO = authorize(oauth2Params, sessionDataCacheEntry,requestHeaderHandler);
+       if (authzRespDTO != null && authzRespDTO.getErrorCode() == null) {
             OAuthASResponse.OAuthAuthorizationResponseBuilder builder = OAuthASResponse
                     .authorizationResponse(request, HttpServletResponse.SC_FOUND);
             // all went okay
@@ -1132,7 +1134,7 @@ public class OAuth2AuthzEndpoint {
      * @return
      */
     private OAuth2AuthorizeRespDTO authorize(OAuth2Parameters oauth2Params
-            , SessionDataCacheEntry sessionDataCacheEntry) {
+            , SessionDataCacheEntry sessionDataCacheEntry,HttpRequestHeaderHandler httpRequestHeaderHandler) {
 
         OAuth2AuthorizeReqDTO authzReqDTO = new OAuth2AuthorizeReqDTO();
         authzReqDTO.setCallbackUrl(oauth2Params.getRedirectURI());
@@ -1147,6 +1149,9 @@ public class OAuth2AuthzEndpoint {
         authzReqDTO.setTenantDomain(oauth2Params.getTenantDomain());
         authzReqDTO.setAuthTime(oauth2Params.getAuthTime());
         authzReqDTO.setEssentialClaims(oauth2Params.getEssentialClaims());
+        //adding Httprequest headers and cookies in AuthzDTO
+        authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
+        authzReqDTO.setCookie(httpRequestHeaderHandler.getCookies());
         return EndpointUtil.getOAuth2Service().authorize(authzReqDTO);
     }
 
@@ -1292,6 +1297,27 @@ public class OAuth2AuthzEndpoint {
                     log.debug("User authenticated. Initiate OIDC browser session.");
                 }
                 opBrowserStateCookie = OIDCSessionManagementUtil.addOPBrowserStateCookie(response);
+                //adding sid claim in the idtoken to OIDCSessionState class
+                if(redirectURL!=null) {
+                    if (redirectURL.contains("id_token")) {
+                        //added sid claims to OIDCSEssionState class
+                        String[] idtoken = redirectURL.split("=")[1].split("\\.");
+                        byte[] decodedBytes = Base64.decodeBase64(idtoken[1]);
+                        String idToken = new String(decodedBytes);
+                        log.info(idToken);
+                        JSONObject token = new JSONObject(idToken);
+                        log.info(token.has("sid"));
+                        if (token.has("sid")) {
+                            String sid = token.getString("sid");
+                            if (sid != null) {
+                                log.info(sid);
+                                log.info(decodedBytes);
+                                sessionStateObj.setSidClaim(sid);
+                            }
+                        }
+                    }
+                }
+
 
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
