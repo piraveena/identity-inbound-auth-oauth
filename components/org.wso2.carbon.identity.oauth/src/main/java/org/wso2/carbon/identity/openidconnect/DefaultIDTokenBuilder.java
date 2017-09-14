@@ -411,6 +411,20 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         request.addProperty(MultitenantConstants.TENANT_DOMAIN, request.getAuthorizationReqDTO().getTenantDomain());
         CustomClaimsCallbackHandler claimsCallBackHandler =
                 OAuthServerConfiguration.getInstance().getOpenIDConnectCustomClaimsCallbackHandler();
+
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders!=null){
+            log.info("*****claim adder found*****"+ claimAdders.size());
+
+            for (ClaimAdder claimAdder : claimAdders) {
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(request, tokenRespDTO);
+                if(log.isDebugEnabled()){
+                    log.debug("New claim found"+ claimAdder.toString());
+                }
+                jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+            }
+        }
+
         claimsCallBackHandler.handleCustomClaims(jwtClaimsSet, request);
         jwtClaimsSet.setSubject(subject);
         if (JWSAlgorithm.NONE.getName().equals(signatureAlgorithm.getName())) {
