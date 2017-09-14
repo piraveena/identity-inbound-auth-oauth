@@ -106,6 +106,8 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
               String bcurl=map.getValue();
               log.info("Token: "+token+" "+"Back_channelLogout url: "+ bcurl);
 
+            Cookie opBrowserStateCookie = OIDCSessionManagementUtil.removeOPBrowserStateCookie(request, response);
+            OIDCSessionManagementUtil.getSessionManager().removeOIDCSessionState(opBrowserStateCookie.getValue());
 
             HttpClient client = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(map.getValue());
@@ -115,15 +117,6 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
             httpPost.setEntity(new UrlEncodedFormEntity(list));
             HttpResponse httpResponse = client.execute(httpPost);
             log.info(httpPost);
-
-//              List<NameValuePair> postparameter=new ArrayList<>();
-//              httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
-//              postparameter.add(new BasicNameValuePair("logout_token",token));
-//              httpPost.setEntity(new UrlEncodedFormEntity(postparameter));
-//              HttpResponse httpResponse = client.execute(httpPost);
-//              InputStream inputStream = httpResponse.getEntity().getContent();
-//              String responseStr = EntityUtils.toString(httpResponse.getEntity());  //Get the contect from httpresponse, it has the value I want
-//              copyStream(inputStream, response.getOutputStream());
 
           }
 
@@ -135,79 +128,14 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
         }
 
     }
-//    public void copyStream(InputStream input, OutputStream output) throws IOException
-//    {
-//        IOUtils.copy(input, output);
-//    }
+//
 
-    /**
-     * returns the session state of the obps cookie
-     *
-     * @param sessionId
-     * @return sessionState of the obps cookie
-     */
 
-    public OIDCSessionState getSessionState(String sessionId) {
+    public Cookie removeSession(HttpServletRequest request, HttpServletResponse response) {
 
-        OIDCSessionState sessionState = OIDCSessionManagementUtil.getSessionManager()
-                .getOIDCSessionState(sessionId);
-        return sessionState;
+        Cookie cookie = OIDCSessionManagementUtil.removeOPBrowserStateCookie(request, response);
+        return cookie;
     }
-
-    /**
-     * return client id of all the RPs belong to same session
-     *
-     * @param sessionState
-     * @return client id of all the RPs belong to same session
-     */
-
-    public Set<String> getSessionParticipants(OIDCSessionState sessionState) {
-
-        Set<String> sessionParticipants = sessionState.getSessionParticipants();
-        return sessionParticipants;
-    }
-
-    /**
-     * returns the sid of the all the RPs belong to same session
-     *
-     * @param sessionState
-     * @return sid of the all the RPs belong to same session
-     */
-    public String getSidClaim(OIDCSessionState sessionState) {
-
-        String sidClaim = sessionState.getSidClaim();
-        return sidClaim;
-    }
-
-    public void buildLogoutToken(OIDCSessionState sessionState){
-        for(String clientId: getSessionParticipants(sessionState)) {
-            String sub = sessionState.getAuthenticatedUser();
-            String aud=clientId;
-            String value= UUID.randomUUID().toString();
-            JSONObject event=new JSONObject();
-            event.put( "http://schemas.openid.net/event/backchannel-logout", new JSONObject());
-            String iss = "https://localhost:9443/carbon/";
-
-//            long lifetimeInMillis = Integer.parseInt(config.getOpenIDConnectIDTokenExpiration()) * 1000;
-            long curTimeInMillis = Calendar.getInstance().getTimeInMillis();
-            Date iat=new Date(curTimeInMillis);
-
-
-        }
-
-    }
-
-    public Cookie removeSession(Cookie cookie, HttpServletResponse response){
-        if (cookie.getName().equals(OIDCSessionConstants.OPBS_COOKIE_ID)) {
-            cookie.setMaxAge(0);
-            cookie.setSecure(true);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-            return cookie;
-        }
-        return null;
-    }
-
 }
 
 

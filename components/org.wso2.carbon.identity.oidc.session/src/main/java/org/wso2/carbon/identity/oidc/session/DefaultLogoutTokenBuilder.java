@@ -82,7 +82,7 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
             boolean isJWTSignedWithSPKey = OAuthServerConfiguration.getInstance().isJWTSignedWithSPKey();
             String signingTenantDomain;
             OAuthAppDO oAuthAppDO = OAuth2Util.getAppInformationByClientId(clientID);
-          //  String backChannelLogoutUrl=oAuthAppDO.getBackChannelLogoutUrl();
+           String backChannelLogoutUrl=oAuthAppDO.getBackChannelLogoutUrl();
 
             if(isJWTSignedWithSPKey) {
 
@@ -96,7 +96,7 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
 
             String logoutToken=OAuth2Util.signJWT(jwtClaimsSet,signatureAlgorithm,signingTenantDomain).serialize();
            // logout_tokenList.put(logoutToken,backChannelLogoutUrl);
-            logout_tokenList.put(logoutToken,"/logout");
+            logout_tokenList.put(logoutToken,backChannelLogoutUrl);
 
         }
     return logout_tokenList;
