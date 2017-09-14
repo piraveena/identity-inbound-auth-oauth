@@ -33,6 +33,7 @@ public class OIDCSessionState implements Serializable {
     private Set<String> sessionParticipants = new HashSet<>();
     private boolean isAuthenticated;
     private boolean addSessionState;
+    private String sidClaim;
 
     /**
      * Returns authenticated user identifier
@@ -114,5 +115,25 @@ public class OIDCSessionState implements Serializable {
      */
     public void setAddSessionState(boolean addSessionState) {
         this.addSessionState = addSessionState;
+    }
+
+    /**
+     * Returns the sessionId for back-channel logout
+     *
+     * @return
+     */
+    public String getSidClaim() {
+
+        return sidClaim;
+    }
+
+    /**
+     * Sets sessionId for back-channel logout
+     *
+     * @param sidClaim
+     */
+    public void setSidClaim(String sidClaim) {
+
+        this.sidClaim = sidClaim;
     }
 }

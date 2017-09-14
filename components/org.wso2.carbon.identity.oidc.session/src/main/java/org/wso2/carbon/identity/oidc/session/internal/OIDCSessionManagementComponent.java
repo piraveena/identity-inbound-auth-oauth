@@ -24,6 +24,7 @@ import org.eclipse.equinox.http.helper.ContextPathServletAdaptor;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.http.HttpService;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
+import org.wso2.carbon.identity.oidc.session.servlet.OIDCBackChannelLogoutServlet;
 import org.wso2.carbon.identity.oidc.session.servlet.OIDCLogoutServlet;
 import org.wso2.carbon.identity.oidc.session.servlet.OIDCSessionIFrameServlet;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -71,6 +72,22 @@ public class OIDCSessionManagementComponent {
         if (log.isDebugEnabled()) {
             log.info("OIDC Session Management bundle is activated");
         }
+
+        //Adding backchannel logout endpoint
+        Servlet bclogoutServlet = new ContextPathServletAdaptor(new OIDCBackChannelLogoutServlet(), OIDCSessionConstants
+                .OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT);
+        try {
+            httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT, bclogoutServlet,
+                    null, null);
+        } catch (Exception e) {
+            String msg = "Error when registering OIDC back-channel Logout Servlet via the HttpService.";
+            log.error(msg, e);
+            throw new RuntimeException(msg, e);
+        }
+        if (log.isDebugEnabled()) {
+            log.info("OIDC back-channel logout bundle is activated");
+        }
+
     }
 
     protected void deactivate(ComponentContext context) {

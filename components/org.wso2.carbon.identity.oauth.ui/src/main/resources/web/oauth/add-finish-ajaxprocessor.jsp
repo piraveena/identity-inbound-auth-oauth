@@ -46,6 +46,7 @@
 
     String applicationName = request.getParameter("application");
     String callback = request.getParameter("callback");
+    String backchannelLogoutUrl=request.getParameter("bclogout");
     String oauthVersion = request.getParameter("oauthVersion");
     String userAccessTokenExpiryTime = request.getParameter("userAccessTokenExpiryTime");
     String applicationAccessTokenExpiryTime = request.getParameter("applicationAccessTokenExpiryTime");
@@ -66,7 +67,7 @@
 	String BUNDLE = "org.wso2.carbon.identity.oauth.ui.i18n.Resources";
 	ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE, request.getLocale());
 	OAuthConsumerAppDTO app = new OAuthConsumerAppDTO();
-	
+
 	String spName = (String) session.getAttribute("application-sp-name");
 	session.removeAttribute("application-sp-name");
 	boolean isError = false;
@@ -82,6 +83,7 @@
 		OAuthAdminClient client = new OAuthAdminClient(cookie, backendServerURL, configContext);
 		app.setApplicationName(applicationName);
 		app.setCallbackUrl(callback);
+        app.setBackChannelLogoutUrl(backchannelLogoutUrl);
 		app.setOAuthVersion(oauthVersion);
 		app.setUserAccessTokenExpiryTime(Long.parseLong(userAccessTokenExpiryTime));
 		app.setApplicationAccessTokenExpiryTime(Long.parseLong(applicationAccessTokenExpiryTime));
@@ -106,9 +108,9 @@
 		app.setPkceSupportPlain(pkceSupportPlain);
 
 		client.registerOAuthApplicationData(app);
-		
+
 		consumerApp = client.getOAuthApplicationDataByAppName(applicationName);
-		
+
 		String message = resourceBundle.getString("app.added.successfully");
 		CarbonUIMessage.sendCarbonUIMessage(message, CarbonUIMessage.INFO, request);
 
@@ -131,7 +133,7 @@ if (qpplicationComponentFound) {
     location.href = '../application/configure-service-provider.jsp?action=update&display=oauthapp&spName=<%=Encode.forUriComponent(spName)%>&oauthapp=<%=Encode.forUriComponent(consumerApp.getOauthConsumerKey())%>';
 <% } else { %>
     location.href = '../application/configure-service-provider.jsp?display=oauthapp&spName=<%=Encode.forUriComponent(spName)%>&action=cancel';
-<% } 
+<% }
 } else {%>
     location.href = 'index.jsp';
 <% } %>

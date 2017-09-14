@@ -290,7 +290,19 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         if (acrValue != null) {
             jwtClaimsSet.setClaim("acr", "urn:mace:incommon:iap:silver");
         }
-
+        //New claims are added in IDtoken
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders != null) {
+            for (ClaimAdder claimAdder : claimAdders) {
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(request, tokenRespDTO);
+                if (log.isDebugEnabled()) {
+                    log.debug("New claim found" + claimAdder.toString());
+                }
+                if (additionalJWTClaimsSet != null) {
+                    jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                }
+            }
+        }
         request.addProperty(OAuthConstants.ACCESS_TOKEN, tokenRespDTO.getAccessToken());
         request.addProperty(MultitenantConstants.TENANT_DOMAIN, request.getOauth2AccessTokenReqDTO().getTenantDomain());
         CustomClaimsCallbackHandler claimsCallBackHandler =
@@ -411,6 +423,20 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         request.addProperty(MultitenantConstants.TENANT_DOMAIN, request.getAuthorizationReqDTO().getTenantDomain());
         CustomClaimsCallbackHandler claimsCallBackHandler =
                 OAuthServerConfiguration.getInstance().getOpenIDConnectCustomClaimsCallbackHandler();
+        //New claims are added in ID token
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders != null) {
+            for (ClaimAdder claimAdder : claimAdders) {
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(request, tokenRespDTO);
+                if (log.isDebugEnabled()) {
+                    log.debug("New claim found" + claimAdder.toString());
+                }
+                if (additionalJWTClaimsSet != null) {
+                    jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                }
+            }
+        }
+
         claimsCallBackHandler.handleCustomClaims(jwtClaimsSet, request);
         jwtClaimsSet.setSubject(subject);
         if (JWSAlgorithm.NONE.getName().equals(signatureAlgorithm.getName())) {

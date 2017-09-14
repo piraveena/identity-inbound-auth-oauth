@@ -167,6 +167,7 @@
                 function onClickUpdate() {
                     var versionValue = document.getElementsByName("oauthVersion")[0].value;
                     var callbackUrl = document.getElementsByName("callback")[0].value;
+                    var bclogoutUrl=document.getElementsByName("bclogout")[0].value;
                     if (!(versionValue == '<%=OAuthConstants.OAuthVersions.VERSION_2%>')) {
                         if (callbackUrl.trim() == '') {
                             CARBON.showWarningDialog('<fmt:message key="callback.is.required"/>');
@@ -313,6 +314,11 @@
                                 <td><input class="text-box-big" id="callback" name="callback"
                                            type="text" value="<%=Encode.forHtmlAttribute(app.getCallbackUrl())%>"/></td>
 		                    </tr>
+                    <tr id="bclogout_row">
+                        <td class="leftCol-med"><fmt:message key="bclogout"/></td>
+                        <td><input class="text-box-big" id="bclogout" name="bclogout"
+                                   type="text" value="<%=Encode.forHtmlAttribute(app.getBackChannelLogoutUrl())%>"/></td>
+                    </tr>
 
                             <script>
                                 if(<%=app.getOAuthVersion().equals(OAuthConstants.OAuthVersions.VERSION_1A)%> || <%=codeGrant%> || <%=implicitGrant%>){
