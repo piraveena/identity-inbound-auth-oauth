@@ -96,6 +96,7 @@ public class OAuth2ServiceComponent {
         bundleContext.registerService(OAuthServerConfiguration.class.getName(), oauthServerConfig, null);
         OAuth2TokenValidationService tokenValidationService = new OAuth2TokenValidationService();
         bundleContext.registerService(OAuth2TokenValidationService.class.getName(), tokenValidationService, null);
+        OAuth2ServiceComponentHolder.setClaimAdders(claimList);
         if (log.isDebugEnabled()) {
             log.debug("Identity OAuth bundle is activated");
         }

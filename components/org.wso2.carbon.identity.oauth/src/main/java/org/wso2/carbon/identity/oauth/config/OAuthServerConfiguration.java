@@ -185,6 +185,7 @@ public class OAuthServerConfiguration {
     // Property added to customize the token valued generation method. (IDENTITY-6139)
     private ValueGenerator tokenValueGenerator;
     private String tokenValueGeneratorClassName;
+    private String openIDConnectBCLogoutTokenExpiration="200";
 
     private OAuthServerConfiguration() {
         buildOAuthServerConfiguration();
@@ -1924,6 +1925,11 @@ public class OAuthServerConfiguration {
         if (log.isDebugEnabled()) {
             log.debug("Use SP tenant domain value is set to: " + useSPTenantDomainValue);
         }
+    }
+
+    public String getOpenIDConnectBCLogoutTokenExpiration() {
+
+        return openIDConnectBCLogoutTokenExpiration;
     }
 
     /**

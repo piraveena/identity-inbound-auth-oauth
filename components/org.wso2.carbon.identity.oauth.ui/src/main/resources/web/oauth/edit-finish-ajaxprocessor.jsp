@@ -46,6 +46,7 @@
 
     String consumerkey = request.getParameter("consumerkey");
     String callback = request.getParameter("callback");
+    String backchannelLogoutUrl=request.getParameter("bclogout");
     String applicationName = request.getParameter("application");
     String consumersecret = request.getParameter("consumersecret");
     String oauthVersion = request.getParameter("oauthVersion");
@@ -83,6 +84,7 @@
         app.setOauthConsumerKey(consumerkey);
         app.setOauthConsumerSecret(consumersecret);
         app.setCallbackUrl(callback);
+        app.setBackChannelLogoutUrl(backchannelLogoutUrl);
         app.setApplicationName(applicationName);
         app.setOAuthVersion(oauthVersion);
         app.setPkceMandatory(pkceMandatory);
