@@ -3,10 +3,12 @@ package org.wso2.carbon.identity.oidc.session;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.HashedMap;
 import org.json.JSONObject;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth.config.OAuthServerConfiguration;
+import org.wso2.carbon.identity.oauth.dao.OAuthAppDAO;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.dto.OAuth2AccessTokenRespDTO;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -39,14 +42,18 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
     }
 
     @Override
-    public String buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
+    public Map<String,String> buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
             throws IdentityOAuth2Exception, InvalidOAuthClientException {
+
+        Map<String,String> logout_tokenList=new HashMap<>();
 
        // send logout token to all RPs
         OIDCSessionState sessionState = getSessionState(request);
 
 
         for(String clientID :getSessionParticipants(sessionState)) {
+
+
 
             String sub = sessionState.getAuthenticatedUser();
             String jti = UUID.randomUUID().toString();
@@ -77,6 +84,7 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
             boolean isJWTSignedWithSPKey = OAuthServerConfiguration.getInstance().isJWTSignedWithSPKey();
             String signingTenantDomain;
             OAuthAppDO oAuthAppDO = OAuth2Util.getAppInformationByClientId(clientID);
+            String backChannelLogoutUrl=oAuthAppDO.getBackChannelLogoutUrl();
 
             if(isJWTSignedWithSPKey) {
 
@@ -89,9 +97,10 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
             }
 
             String logoutToken=OAuth2Util.signJWT(jwtClaimsSet,signatureAlgorithm,signingTenantDomain).serialize();
-            return logoutToken;
+            logout_tokenList.put(logoutToken,backChannelLogoutUrl);
+
         }
-    return null;
+    return logout_tokenList;
     }
 
 

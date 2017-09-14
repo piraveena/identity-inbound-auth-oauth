@@ -286,21 +286,22 @@ public class OAuthAppDAO {
                     oauthApp.setApplicationName(rSet.getString(3));
                     oauthApp.setOauthVersion(rSet.getString(4));
                     oauthApp.setCallbackUrl(rSet.getString(5));
-                    authenticatedUser.setTenantDomain(IdentityTenantUtil.getTenantDomain(rSet.getInt(6)));
-                    authenticatedUser.setUserStoreDomain(rSet.getString(7));
+                    oauthApp.setBackChannelLogoutUrl(rSet.getString(6));
+                    authenticatedUser.setTenantDomain(IdentityTenantUtil.getTenantDomain(rSet.getInt(7)));
+                    authenticatedUser.setUserStoreDomain(rSet.getString(8));
                     oauthApp.setUser(authenticatedUser);
-                    oauthApp.setGrantTypes(rSet.getString(8));
-                    oauthApp.setId(rSet.getInt(9));
+                    oauthApp.setGrantTypes(rSet.getString(9));
+                    oauthApp.setId(rSet.getInt(10));
                     if (isPKCESupportEnabled) {
-                        oauthApp.setPkceMandatory("0".equals(rSet.getString(10)) ? false : true);
-                        oauthApp.setPkceSupportPlain("0".equals(rSet.getString(11)) ? false : true);
-                        oauthApp.setUserAccessTokenExpiryTime(rSet.getLong(12));
-                        oauthApp.setApplicationAccessTokenExpiryTime(rSet.getLong(13));
-                        oauthApp.setRefreshTokenExpiryTime(rSet.getLong(14));
+                        oauthApp.setPkceMandatory("0".equals(rSet.getString(11)) ? false : true);
+                        oauthApp.setPkceSupportPlain("0".equals(rSet.getString(12)) ? false : true);
+                        oauthApp.setUserAccessTokenExpiryTime(rSet.getLong(13));
+                        oauthApp.setApplicationAccessTokenExpiryTime(rSet.getLong(14));
+                        oauthApp.setRefreshTokenExpiryTime(rSet.getLong(15));
                     } else {
-                        oauthApp.setUserAccessTokenExpiryTime(rSet.getLong(10));
-                        oauthApp.setApplicationAccessTokenExpiryTime(rSet.getLong(11));
-                        oauthApp.setRefreshTokenExpiryTime(rSet.getLong(12));
+                        oauthApp.setUserAccessTokenExpiryTime(rSet.getLong(11));
+                        oauthApp.setApplicationAccessTokenExpiryTime(rSet.getLong(12));
+                        oauthApp.setRefreshTokenExpiryTime(rSet.getLong(13));
                     }
                     oauthApps.add(oauthApp);
                 }

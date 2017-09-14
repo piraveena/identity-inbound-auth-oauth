@@ -2,8 +2,17 @@ package org.wso2.carbon.identity.oidc.session.servlet;
 
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.HttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
@@ -18,9 +27,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -83,10 +97,36 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
 
         log.info("OIDCBackChannelLogoutServlet: accessing get method ");
         log.info(request.toString());
-        PrintWriter print=response.getWriter();
         try {
             DefaultLogoutTokenBuilder logoutTokenBuilder=new DefaultLogoutTokenBuilder();
-           String logoutToken=logoutTokenBuilder.buildLogoutToken(request,response);
+           Map<String,String> logoutToken_list=logoutTokenBuilder.buildLogoutToken(request,response);
+
+          for(Map.Entry<String,String> map: logoutToken_list.entrySet()){
+              String token=map.getKey();
+              String bcurl=map.getValue();
+              log.info("Token: "+token+" "+"Back_channelLogout url: "+ bcurl);
+
+
+            HttpClient client = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(map.getValue());
+            BasicNameValuePair nvp1= new BasicNameValuePair("logout_token",token);
+            ArrayList<BasicNameValuePair> list=new ArrayList<>();
+            list.add(nvp1);
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse = client.execute(httpPost);
+            log.info(httpPost);
+
+//              List<NameValuePair> postparameter=new ArrayList<>();
+//              httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
+//              postparameter.add(new BasicNameValuePair("logout_token",token));
+//              httpPost.setEntity(new UrlEncodedFormEntity(postparameter));
+//              HttpResponse httpResponse = client.execute(httpPost);
+//              InputStream inputStream = httpResponse.getEntity().getContent();
+//              String responseStr = EntityUtils.toString(httpResponse.getEntity());  //Get the contect from httpresponse, it has the value I want
+//              copyStream(inputStream, response.getOutputStream());
+
+          }
+
 
         } catch (IdentityOAuth2Exception e) {
            log.info("IdentityOAuthException");
@@ -95,6 +135,10 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
         }
 
     }
+//    public void copyStream(InputStream input, OutputStream output) throws IOException
+//    {
+//        IOUtils.copy(input, output);
+//    }
 
     /**
      * returns the session state of the obps cookie

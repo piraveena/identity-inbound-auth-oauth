@@ -8,6 +8,7 @@ import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 
 public interface LogoutTokenBuilder {
@@ -18,6 +19,6 @@ public interface LogoutTokenBuilder {
      * @return
      * @throws IdentityOAuth2Exception
      */
-    public String buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
+    public Map<String,String> buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
             throws IdentityOAuth2Exception, InvalidOAuthClientException;
 }
