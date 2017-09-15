@@ -14,11 +14,15 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oidc.session.DefaultLogoutTokenBuilder;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCache;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCacheEntry;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCacheKey;
 import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
 
 import javax.servlet.ServletException;
@@ -106,8 +110,6 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
               String bcurl=map.getValue();
               log.info("Token: "+token+" "+"Back_channelLogout url: "+ bcurl);
 
-            Cookie opBrowserStateCookie = OIDCSessionManagementUtil.removeOPBrowserStateCookie(request, response);
-            OIDCSessionManagementUtil.getSessionManager().removeOIDCSessionState(opBrowserStateCookie.getValue());
 
             HttpClient client = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(map.getValue());
@@ -117,6 +119,12 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
             httpPost.setEntity(new UrlEncodedFormEntity(list));
             HttpResponse httpResponse = client.execute(httpPost);
             log.info(httpPost);
+              String sessionDataKey = request.getParameter(FrameworkConstants.SESSION_DATA_KEY);
+              OIDCSessionDataCacheEntry cacheEntry =getSessionDataFromCache(sessionDataKey);
+              removeSessionDataFromCache(sessionDataKey);
+
+            Cookie opBrowserStateCookie = OIDCSessionManagementUtil.removeOPBrowserStateCookie(request, response);
+              OIDCSessionManagementUtil.getSessionManager().removeOIDCSessionState(opBrowserStateCookie.getValue());
 
           }
 
@@ -131,10 +139,16 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
 //
 
 
-    public Cookie removeSession(HttpServletRequest request, HttpServletResponse response) {
 
-        Cookie cookie = OIDCSessionManagementUtil.removeOPBrowserStateCookie(request, response);
-        return cookie;
+    private OIDCSessionDataCacheEntry getSessionDataFromCache(String sessionDataKey) {
+
+        OIDCSessionDataCacheKey cacheKey = new OIDCSessionDataCacheKey(sessionDataKey);
+        return OIDCSessionDataCache.getInstance().getValueFromCache(cacheKey);
+    }
+    private void removeSessionDataFromCache(String sessionDataKey) {
+
+        OIDCSessionDataCacheKey cacheKey = new OIDCSessionDataCacheKey(sessionDataKey);
+        OIDCSessionDataCache.getInstance().clearCacheEntry(cacheKey);
     }
 }
 
