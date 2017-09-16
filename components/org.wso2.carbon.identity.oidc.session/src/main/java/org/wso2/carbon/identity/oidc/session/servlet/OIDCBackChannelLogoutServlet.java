@@ -3,6 +3,7 @@ package org.wso2.carbon.identity.oidc.session.servlet;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
@@ -129,8 +130,9 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
             HttpResponse httpResponse = client.execute(httpPost);
             log.info(httpPost);
 
-            sendToFrameworkForLogout(request, response);
+
           }
+            sendToFrameworkForLogout(request, response);
 
 
         } catch (IdentityOAuth2Exception e) {
@@ -232,12 +234,16 @@ public class OIDCBackChannelLogoutServlet extends HttpServlet {
             removeSessionDataFromCache(sessionDataKey);
             Cookie opBrowserStateCookie = OIDCSessionManagementUtil.removeOPBrowserStateCookie(request, response);
             OIDCSessionManagementUtil.getSessionManager().removeOIDCSessionState(opBrowserStateCookie.getValue());
+                response.sendRedirect(
+                   OIDCSessionManagementUtil.getErrorPageURL(OAuth2ErrorCodes.SERVER_ERROR, "Logout successfully"));
 
-        String redirectURL = OIDCSessionManagementUtil.getOIDCLogoutURL();
-        response.sendRedirect(redirectURL);
-//                    response.sendRedirect(
-//                    OIDCSessionManagementUtil.getErrorPageURL(OAuth2ErrorCodes.SERVER_ERROR, "Logout successfully"));
+    }
+    private String appendStateQueryParam(String redirectURL, String stateParam) {
 
+        if (StringUtils.isNotEmpty(stateParam)) {
+            redirectURL = redirectURL + "?" + OIDCSessionConstants.OIDC_STATE_PARAM + "=" + stateParam;
+        }
+        return redirectURL;
     }
 
 
