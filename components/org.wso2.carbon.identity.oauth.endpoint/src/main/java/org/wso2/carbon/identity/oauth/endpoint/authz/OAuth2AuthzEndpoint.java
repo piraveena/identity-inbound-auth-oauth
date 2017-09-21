@@ -68,6 +68,7 @@ import org.wso2.carbon.identity.oauth2.model.CarbonOAuthAuthzRequest;
 import org.wso2.carbon.identity.oauth2.model.HttpRequestHeaderHandler;
 import org.wso2.carbon.identity.oauth2.model.OAuth2Parameters;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
+import org.wso2.carbon.identity.oidc.session.OIDCBackChannelAuthCode;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
 import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
@@ -89,6 +90,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -1321,7 +1323,17 @@ public class OAuth2AuthzEndpoint {
                             }
                         }
                     }
+                    if(redirectURL.contains("code")){
+                        String sid= UUID.randomUUID().toString();
+                        log.info(sid);
+                        sessionStateObj.setSidClaim(sid);
+                        String code=redirectURL.split("=")[1];
+                        OIDCBackChannelAuthCode codeStore=new OIDCBackChannelAuthCode(code);
+                        codeStore.setSid(sid);
+                    }
+
                 }
+
 
 
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
@@ -1344,6 +1356,11 @@ public class OAuth2AuthzEndpoint {
                         previousSessionState.addSessionParticipant(oAuth2Parameters.getClientId());
                         OIDCSessionManagementUtil.getSessionManager().restoreOIDCSessionState
                                 (oldOPBrowserStateCookieId, newOPBrowserStateCookieId, previousSessionState);
+                        String code=redirectURL.split("=")[1];
+                        OIDCBackChannelAuthCode codeStore=new OIDCBackChannelAuthCode(code);
+                        codeStore.setSid(previousSessionState.getSidClaim());
+                        log.info(code);
+
                     }
                 } else {
                     log.warn("No session state found for the received Session ID : " + opBrowserStateCookie.getValue());
