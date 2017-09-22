@@ -1156,7 +1156,7 @@ public class OAuth2AuthzEndpoint {
         authzReqDTO.setTenantDomain(oauth2Params.getTenantDomain());
         authzReqDTO.setAuthTime(oauth2Params.getAuthTime());
         authzReqDTO.setEssentialClaims(oauth2Params.getEssentialClaims());
-        //adding Httprequest headers and cookies in AuthzDTO
+        //Adding Httprequest headers and cookies in AuthzDTO
         authzReqDTO.setHttpRequestHeaders(httpRequestHeaderHandler.getHttpRequestHeaders());
         authzReqDTO.setCookie(httpRequestHeaderHandler.getCookies());
         return EndpointUtil.getOAuth2Service().authorize(authzReqDTO);
@@ -1305,7 +1305,7 @@ public class OAuth2AuthzEndpoint {
                 }
                 opBrowserStateCookie = OIDCSessionManagementUtil.addOPBrowserStateCookie(response);
                 //adding sid claim in the idtoken to OIDCSessionState class
-                if(redirectURL!=null) {
+                if (redirectURL != null) {
                     if (redirectURL.contains("id_token")) {
                         //added sid claims to OIDCSEssionState class
                         String[] idtoken = redirectURL.split("=")[1].split("\\.");
@@ -1323,19 +1323,15 @@ public class OAuth2AuthzEndpoint {
                             }
                         }
                     }
-                    if(redirectURL.contains("code")){
-                        String sid= UUID.randomUUID().toString();
+                    if (redirectURL.contains("code")) {
+                        String sid = UUID.randomUUID().toString();
                         log.info(sid);
                         sessionStateObj.setSidClaim(sid);
-                        String code=redirectURL.split("=")[1];
-                        OIDCBackChannelAuthCode codeStore=new OIDCBackChannelAuthCode(code);
-                        codeStore.setSid(sid);
+                        String code = redirectURL.split("=")[1];
+                        OIDCBackChannelAuthCode.setSidCode(code, sid);
                     }
 
                 }
-
-
-
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
                 OIDCSessionManagementUtil.getSessionManager()
@@ -1356,11 +1352,8 @@ public class OAuth2AuthzEndpoint {
                         previousSessionState.addSessionParticipant(oAuth2Parameters.getClientId());
                         OIDCSessionManagementUtil.getSessionManager().restoreOIDCSessionState
                                 (oldOPBrowserStateCookieId, newOPBrowserStateCookieId, previousSessionState);
-                        String code=redirectURL.split("=")[1];
-                        OIDCBackChannelAuthCode codeStore=new OIDCBackChannelAuthCode(code);
-                        codeStore.setSid(previousSessionState.getSidClaim());
-                        log.info(code);
-
+                        String code = redirectURL.split("=")[1];
+                        OIDCBackChannelAuthCode.setSidCode(code, previousSessionState.getSidClaim());
                     }
                 } else {
                     log.warn("No session state found for the received Session ID : " + opBrowserStateCookie.getValue());
