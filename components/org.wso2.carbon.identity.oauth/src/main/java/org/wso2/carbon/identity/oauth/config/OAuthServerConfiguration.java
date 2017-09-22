@@ -185,7 +185,7 @@ public class OAuthServerConfiguration {
     // Property added to customize the token valued generation method. (IDENTITY-6139)
     private ValueGenerator tokenValueGenerator;
     private String tokenValueGeneratorClassName;
-    private String openIDConnectBCLogoutTokenExpiration="200";
+    private String openIDConnectBCLogoutTokenExpiration="120";
 
     private OAuthServerConfiguration() {
         buildOAuthServerConfiguration();
