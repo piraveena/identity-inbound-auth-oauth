@@ -37,27 +37,20 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
 
         config = OAuthServerConfiguration.getInstance();
         signatureAlgorithm = OAuth2Util.mapSignatureAlgorithmForJWSAlgorithm(config.getIdTokenSignatureAlgorithm());
-
-
     }
 
     @Override
-    public Map<String,String> buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
+    public Map<String, String> buildLogoutToken(HttpServletRequest request, HttpServletResponse response)
             throws IdentityOAuth2Exception, InvalidOAuthClientException {
 
-        Map<String,String> logout_tokenList=new HashMap<>();
-
-       // send logout token to all RPs
+        Map<String, String> logout_tokenList = new HashMap<>();
+        // Send logout token to all RPs
         OIDCSessionState sessionState = getSessionState(request);
-
-
-        for(String clientID :getSessionParticipants(sessionState)) {
-
+        for (String clientID : getSessionParticipants(sessionState)) {
 
 
             String sub = sessionState.getAuthenticatedUser();
             String jti = UUID.randomUUID().toString();
-
             String iss = "https://localhost:9443/carbon/";
             ArrayList<String> audience = new ArrayList<String>();
             audience.add(clientID);
@@ -65,8 +58,8 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
             long curTimeInMillis = Calendar.getInstance().getTimeInMillis();
             Date iat = new Date(curTimeInMillis);
             String sid = getSidClaim(getSessionState(request));
-            Map<String,Object> eventMap=new HashMap<>();
-            eventMap.put("http://schemas.openid.net/event/backchannel-logout",new JSONObject());
+            Map<String, Object> eventMap = new HashMap<>();
+            eventMap.put("http://schemas.openid.net/event/backchannel-logout", new JSONObject());
             JSONObject event = new JSONObject(eventMap);
 
             JWTClaimsSet jwtClaimsSet = new JWTClaimsSet();
@@ -82,29 +75,24 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
             boolean isJWTSignedWithSPKey = OAuthServerConfiguration.getInstance().isJWTSignedWithSPKey();
             String signingTenantDomain;
             OAuthAppDO oAuthAppDO = OAuth2Util.getAppInformationByClientId(clientID);
-           String backChannelLogoutUrl=oAuthAppDO.getBackChannelLogoutUrl();
+            String backChannelLogoutUrl = oAuthAppDO.getBackChannelLogoutUrl();
 
-            if(isJWTSignedWithSPKey) {
-
-               //tenant domain of the SP
-                signingTenantDomain=OAuth2Util.getTenantDomainOfOauthApp(oAuthAppDO);
-
-            }else {
-                //tenant domain of the user
-                signingTenantDomain=oAuthAppDO.getUser().getTenantDomain();
+            if (isJWTSignedWithSPKey) {
+                //Tenant domain of the SP
+                signingTenantDomain = OAuth2Util.getTenantDomainOfOauthApp(oAuthAppDO);
+            } else {
+                //Tenant domain of the user
+                signingTenantDomain = oAuthAppDO.getUser().getTenantDomain();
             }
-
-            String logoutToken=OAuth2Util.signJWT(jwtClaimsSet,signatureAlgorithm,signingTenantDomain).serialize();
-           // logout_tokenList.put(logoutToken,backChannelLogoutUrl);
-            logout_tokenList.put(logoutToken,backChannelLogoutUrl);
-
+            String logoutToken = OAuth2Util.signJWT(jwtClaimsSet, signatureAlgorithm, signingTenantDomain).serialize();
+            logout_tokenList.put(logoutToken, backChannelLogoutUrl);
         }
-    return logout_tokenList;
+        return logout_tokenList;
     }
 
 
     /**
-     * returns the session state of the obps cookie
+     * Returns the OIDCsessionState of the obps cookie
      *
      * @param request
      * @return
@@ -119,7 +107,7 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
     }
 
     /**
-     * return client id of all the RPs belong to same session
+     * Return client id of all the RPs belong to same session
      *
      * @param sessionState
      * @return client id of all the RPs belong to same session
@@ -131,7 +119,7 @@ public class DefaultLogoutTokenBuilder implements LogoutTokenBuilder {
     }
 
     /**
-     * returns the sid of the all the RPs belong to same session
+     * Returns the sid of the all the RPs belong to same session
      *
      * @param sessionState
      * @return

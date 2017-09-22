@@ -11,6 +11,7 @@ import java.util.Map;
 public interface ClaimAdder {
 
     /**
+     * Add claims to ID token during implicit flow
      *
      * @param request
      * @param tokenRespDTO
@@ -21,6 +22,7 @@ public interface ClaimAdder {
             throws IdentityOAuth2Exception;
 
     /**
+     * Add claims to ID token during authorization flow
      *
      * @param request
      * @param tokenRespDTO

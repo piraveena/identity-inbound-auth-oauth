@@ -72,25 +72,22 @@ public class OIDCSessionManagementComponent {
         if (log.isDebugEnabled()) {
             log.info("OIDC Session Management bundle is activated");
         }
+
+        //Adding backchannel logout endpoint
+        Servlet bclogoutServlet = new ContextPathServletAdaptor(new OIDCBackChannelLogoutServlet(), OIDCSessionConstants
+                .OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT);
         try {
-            Servlet bclogoutServlet=new ContextPathServletAdaptor(new OIDCBackChannelLogoutServlet(),OIDCSessionConstants
-                    .OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT );
-            try {
-                log.info("test before OIDC_BC_LOGOUT_ENDPOINT");
-                httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT, bclogoutServlet,
-                        null,null);
-                log.info("test after OIDC_BC_LOGOUT_ENDPOINT");
-            } catch (Exception e) {
-                String msg = "Error when registering OIDC back-channel Logout Servlet via the HttpService.";
-                log.error(msg, e);
-                throw new RuntimeException(msg, e);
-            }
-            if (log.isDebugEnabled()) {
-                log.info("OIDC back-channel logout bundle is activated");
-            }
-        } catch (Throwable e) {
-            log.error("Error ", e);
+            httpService.registerServlet(OIDCSessionConstants.OIDCEndpoints.OIDC_BC_LOGOUT_ENDPOINT, bclogoutServlet,
+                    null, null);
+        } catch (Exception e) {
+            String msg = "Error when registering OIDC back-channel Logout Servlet via the HttpService.";
+            log.error(msg, e);
+            throw new RuntimeException(msg, e);
         }
+        if (log.isDebugEnabled()) {
+            log.info("OIDC back-channel logout bundle is activated");
+        }
+
     }
 
     protected void deactivate(ComponentContext context) {

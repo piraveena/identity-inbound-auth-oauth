@@ -117,13 +117,23 @@ public class OIDCSessionState implements Serializable {
         this.addSessionState = addSessionState;
     }
 
-    public void setSidClaim(String sidClaim) {
-
-        this.sidClaim = sidClaim;
-    }
-
+    /**
+     * Returns the sessionId for back-channel logout
+     *
+     * @return
+     */
     public String getSidClaim() {
 
         return sidClaim;
+    }
+
+    /**
+     * Sets sessionId for back-channel logout
+     *
+     * @param sidClaim
+     */
+    public void setSidClaim(String sidClaim) {
+
+        this.sidClaim = sidClaim;
     }
 }

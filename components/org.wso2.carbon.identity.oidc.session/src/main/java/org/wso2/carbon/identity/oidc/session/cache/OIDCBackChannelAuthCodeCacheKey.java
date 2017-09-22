@@ -1,15 +1,18 @@
 package org.wso2.carbon.identity.oidc.session.cache;
 
-import org.wso2.carbon.identity.oauth.cache.CacheKey;
-import org.wso2.carbon.identity.oidc.session.OIDCBackChannelAuthCode;
+import org.wso2.carbon.identity.application.common.cache.CacheKey;
 
 /**
- * Created by piraveena on 9/21/17.
+ * This class holds the cache key which is AuthorizationCode
  */
 public class OIDCBackChannelAuthCodeCacheKey extends CacheKey {
     private String authCode;
 
-    public void setAuthCode(String authCode){
+    /**
+     *
+     * @param authCode is the cache key
+     */
+    public OIDCBackChannelAuthCodeCacheKey(String authCode){
         this.authCode=authCode;
     }
 
@@ -19,7 +22,7 @@ public class OIDCBackChannelAuthCodeCacheKey extends CacheKey {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof OIDCBackChannelAuthCode)) {
+        if (!(o instanceof OIDCBackChannelAuthCodeCacheKey)) {
             return false;
         }
         return this.authCode.equals(((OIDCBackChannelAuthCodeCacheKey) o).getAuthCode());
