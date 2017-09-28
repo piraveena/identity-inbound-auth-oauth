@@ -1311,14 +1311,10 @@ public class OAuth2AuthzEndpoint {
                     if (redirectURL.contains("id_token")) {
                         byte[] decodedBytes=null;
                         if (redirectURL.contains("access_token")) {
-                            log.info(redirectURL);
                             String[] idtoken=redirectURL.split("=")[2].split("&")[0].split("\\.");
                             decodedBytes = Base64.decodeBase64(idtoken[1]);
-                            log.info(decodedBytes);
-
 
                         } else {
-
                             //Added sid claims to OIDCsessionState class
                             String[] idtoken = redirectURL.split("=")[1].split("\\.");
                             decodedBytes = Base64.decodeBase64(idtoken[1]);

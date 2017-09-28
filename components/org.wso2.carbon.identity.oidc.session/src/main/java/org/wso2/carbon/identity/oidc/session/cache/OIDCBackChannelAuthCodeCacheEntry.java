@@ -8,8 +8,8 @@ import org.wso2.carbon.identity.application.common.cache.CacheEntry;
  */
 public class OIDCBackChannelAuthCodeCacheEntry extends CacheEntry {
 
-    private static final long serialVersionUID = -4123547630178387354L;
 
+    private static final long serialVersionUID = 5350707130037370099L;
     private String sessionId;
 
     /**
