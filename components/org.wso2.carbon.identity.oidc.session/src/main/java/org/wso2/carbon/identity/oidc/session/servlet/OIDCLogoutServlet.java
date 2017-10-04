@@ -44,6 +44,7 @@ import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
+import org.wso2.carbon.identity.oidc.session.OidcBackChannelLogout;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCache;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCacheEntry;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCacheKey;
@@ -99,6 +100,7 @@ public class OIDCLogoutServlet extends HttpServlet {
          * todo: id_token_hint value
          */
 
+
         String redirectURL;
         Cookie opBrowserStateCookie = OIDCSessionManagementUtil.getOPBrowserStateCookie(request);
 
@@ -127,6 +129,20 @@ public class OIDCLogoutServlet extends HttpServlet {
             // User consent received for logout
             if (consent.equals(OAuthConstants.Consent.APPROVE)) {
                 // User approved logout. Logout from authentication framework
+
+                //send bak-channel Logout to all RPs
+                OidcBackChannelLogout backChannelLogout=new OidcBackChannelLogout();
+                try {
+                    backChannelLogout.sendBackChannelLogout(request,response);
+                    if(log.isDebugEnabled()){
+                        log.debug("Backchannel logout request is sent to all RPs");
+                    }
+                } catch (IdentityOAuth2Exception e) {
+                    e.printStackTrace();
+                } catch (InvalidOAuthClientException e) {
+                    e.printStackTrace();
+                }
+
                 sendToFrameworkForLogout(request, response);
                 return;
             } else {
@@ -156,7 +172,19 @@ public class OIDCLogoutServlet extends HttpServlet {
                     OIDCSessionDataCacheEntry cacheEntry = new OIDCSessionDataCacheEntry();
                     addSessionDataToCache(opBrowserStateCookie.getValue(), cacheEntry);
                 }
-                sendToFrameworkForLogout(request, response);
+                OidcBackChannelLogout backChannelLogout=new OidcBackChannelLogout();
+                try {
+                    backChannelLogout.sendBackChannelLogout(request,response);
+                    if(log.isDebugEnabled()){
+                        log.debug("back");
+                    }
+                } catch (IdentityOAuth2Exception e) {
+                    e.printStackTrace();
+                } catch (InvalidOAuthClientException e) {
+                    e.printStackTrace();
+                }
+
+
                 return;
             } else {
                 sendToConsentUri(request, response);
