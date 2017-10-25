@@ -71,6 +71,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
 
 import static org.wso2.carbon.identity.oauth.common.OAuthConstants.OIDCClaims.AT_HASH;
@@ -165,6 +166,18 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
             jwtClaimsSet.setClaim(OAuthConstants.OIDCClaims.ACR, "urn:mace:incommon:iap:silver");
         }
 
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders != null) {
+            for (ClaimAdder claimAdder : claimAdders) {
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(tokenReqMsgCtxt, tokenRespDTO);
+                if (log.isDebugEnabled()) {
+                    log.debug("New claim found" + claimAdder.toString());
+                }
+                if (additionalJWTClaimsSet != null) {
+                    jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                }
+            }
+        }
         tokenReqMsgCtxt.addProperty(OAuthConstants.ACCESS_TOKEN, accessToken);
         tokenReqMsgCtxt.addProperty(MultitenantConstants.TENANT_DOMAIN, getSpTenantDomain(tokenReqMsgCtxt));
 
@@ -233,6 +246,19 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         }
         if (acrValue != null) {
             jwtClaimsSet.setClaim(OAuthConstants.OIDCClaims.ACR, "urn:mace:incommon:iap:silver");
+        }
+
+        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
+        if (claimAdders != null) {
+            for (ClaimAdder claimAdder : claimAdders) {
+                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(authzReqMessageContext, tokenRespDTO);
+                if (log.isDebugEnabled()) {
+                    log.debug("New claim found" + claimAdder.toString());
+                }
+                if (additionalJWTClaimsSet != null) {
+                    jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                }
+            }
         }
 
         authzReqMessageContext.addProperty(OAuthConstants.ACCESS_TOKEN, accessToken);
