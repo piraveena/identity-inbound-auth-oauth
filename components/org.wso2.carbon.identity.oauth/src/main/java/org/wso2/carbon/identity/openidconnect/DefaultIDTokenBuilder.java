@@ -71,6 +71,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
 
 import static org.wso2.carbon.identity.oauth.common.OAuthConstants.OIDCClaims.AT_HASH;
@@ -165,6 +166,22 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
             jwtClaimsSet.setClaim(OAuthConstants.OIDCClaims.ACR, "urn:mace:incommon:iap:silver");
         }
 
+        List<ClaimProvider> claimProviders = OAuth2ServiceComponentHolder.getClaimProviders();
+        if (claimProviders != null) {
+            for (ClaimProvider claimProvider : claimProviders) {
+                Map<String, Object> additionalJWTClaimsSet =
+                        claimProvider.getAdditionalClaims(tokenReqMsgCtxt, tokenRespDTO);
+                if (additionalJWTClaimsSet != null) {
+                    jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                    if (log.isDebugEnabled()) {
+                        for (Map.Entry<String, Object> entry : additionalJWTClaimsSet.entrySet()) {
+                            log.debug("Additional claim found :" + entry.getKey() + ": " + entry.getValue());
+                        }
+                    }
+                }
+            }
+        }
+
         tokenReqMsgCtxt.addProperty(OAuthConstants.ACCESS_TOKEN, accessToken);
         tokenReqMsgCtxt.addProperty(MultitenantConstants.TENANT_DOMAIN, getSpTenantDomain(tokenReqMsgCtxt));
 
@@ -233,6 +250,22 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
         }
         if (acrValue != null) {
             jwtClaimsSet.setClaim(OAuthConstants.OIDCClaims.ACR, "urn:mace:incommon:iap:silver");
+        }
+
+        List<ClaimProvider> claimProviders = OAuth2ServiceComponentHolder.getClaimProviders();
+        if (claimProviders != null) {
+            for (ClaimProvider claimProvider : claimProviders) {
+                Map<String, Object> additionalJWTClaimsSet = claimProvider
+                        .getAdditionalClaims(authzReqMessageContext, tokenRespDTO);
+                if (additionalJWTClaimsSet != null) {
+                    jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                    if (log.isDebugEnabled()) {
+                        for (Map.Entry<String, Object> entry : additionalJWTClaimsSet.entrySet()) {
+                            log.debug("Additional claim found :" + entry.getKey() + ": " + entry.getValue());
+                        }
+                    }
+                }
+            }
         }
 
         authzReqMessageContext.addProperty(OAuthConstants.ACCESS_TOKEN, accessToken);
