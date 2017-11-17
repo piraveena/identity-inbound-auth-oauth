@@ -192,8 +192,8 @@ public class OAuthServerConfiguration {
 
     private String tokenValueGeneratorClassName;
 
-    // Property added to determine the expiration of logout token in oidc back-channel logout
-    private String openIDConnectBCLogoutTokenExpiration="200";
+    // Property added to determine the expiration of logout token in oidc back-channel logout.
+    private String openIDConnectBCLogoutTokenExpiryInSeconds = "120";
 
     private OAuthServerConfiguration() {
         buildOAuthServerConfiguration();
@@ -922,10 +922,11 @@ public class OAuthServerConfiguration {
 
     /**
      * Returns expiration time of logout token in oidc back-channel logout.
-     * @return
+     *
+     * @return Logout token expiry time in seconds.
      */
-    public String getOpenIDConnectBCLogoutTokenExpiration(){
-        return openIDConnectBCLogoutTokenExpiration;
+    public String getOpenIDConnectBCLogoutTokenExpiration() {
+        return openIDConnectBCLogoutTokenExpiryInSeconds;
     }
 
     public String getOpenIDConnectUserInfoEndpointClaimDialect() {
@@ -1937,6 +1938,13 @@ public class OAuthServerConfiguration {
                     supportedClaims = supportedClaimStr.split(",");
                 }
             }
+            if (openIDConnectConfigElem.getFirstChildWithName(getQNameWithIdentityNS(ConfigElements.OPENID_CONNECT_BACK_CHANNEL_LOGOUT_TOKEN_EXPIRATION)) != null) {
+
+                openIDConnectBCLogoutTokenExpiryInSeconds =
+                        openIDConnectConfigElem.getFirstChildWithName(getQNameWithIdentityNS(ConfigElements.OPENID_CONNECT_BACK_CHANNEL_LOGOUT_TOKEN_EXPIRATION))
+                                .getText().trim();
+
+            }
         }
     }
 
@@ -2028,6 +2036,7 @@ public class OAuthServerConfiguration {
         public static final String OPENID_CONNECT_SIGN_JWT_WITH_SP_KEY = "SignJWTWithSPKey";
         public static final String OPENID_CONNECT_IDTOKEN_CUSTOM_CLAIM_CALLBACK_HANDLER = "IDTokenCustomClaimsCallBackHandler";
         public static final String SUPPORTED_CLAIMS = "OpenIDConnectClaims";
+        public static final String OPENID_CONNECT_BACK_CHANNEL_LOGOUT_TOKEN_EXPIRATION = "LogoutTokenExpiration";
         // Callback handler related configuration elements
         private static final String OAUTH_CALLBACK_HANDLERS = "OAuthCallbackHandlers";
         private static final String OAUTH_CALLBACK_HANDLER = "OAuthCallbackHandler";

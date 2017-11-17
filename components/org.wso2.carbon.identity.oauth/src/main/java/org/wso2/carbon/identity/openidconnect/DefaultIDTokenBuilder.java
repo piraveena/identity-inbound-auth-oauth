@@ -166,18 +166,22 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
             jwtClaimsSet.setClaim(OAuthConstants.OIDCClaims.ACR, "urn:mace:incommon:iap:silver");
         }
 
-        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
-        if (claimAdders != null) {
-            for (ClaimAdder claimAdder : claimAdders) {
-                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(tokenReqMsgCtxt, tokenRespDTO);
-                if (log.isDebugEnabled()) {
-                    log.debug("New claim found" + claimAdder.toString());
-                }
+        List<ClaimProvider> claimProviders = OAuth2ServiceComponentHolder.getClaimProviders();
+        if (claimProviders != null) {
+            for (ClaimProvider claimProvider : claimProviders) {
+                Map<String, Object> additionalJWTClaimsSet =
+                        claimProvider.getAdditionalClaims(tokenReqMsgCtxt, tokenRespDTO);
                 if (additionalJWTClaimsSet != null) {
                     jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                    if (log.isDebugEnabled()) {
+                        for (Map.Entry<String, Object> entry : additionalJWTClaimsSet.entrySet()) {
+                            log.debug("Additional claim found :" + entry.getKey() + ": " + entry.getValue());
+                        }
+                    }
                 }
             }
         }
+
         tokenReqMsgCtxt.addProperty(OAuthConstants.ACCESS_TOKEN, accessToken);
         tokenReqMsgCtxt.addProperty(MultitenantConstants.TENANT_DOMAIN, getSpTenantDomain(tokenReqMsgCtxt));
 
@@ -248,15 +252,18 @@ public class DefaultIDTokenBuilder implements org.wso2.carbon.identity.openidcon
             jwtClaimsSet.setClaim(OAuthConstants.OIDCClaims.ACR, "urn:mace:incommon:iap:silver");
         }
 
-        List<ClaimAdder> claimAdders = OAuth2ServiceComponentHolder.getClaimAdders();
-        if (claimAdders != null) {
-            for (ClaimAdder claimAdder : claimAdders) {
-                Map<String, Object> additionalJWTClaimsSet = claimAdder.getAdditionalClaims(authzReqMessageContext, tokenRespDTO);
-                if (log.isDebugEnabled()) {
-                    log.debug("New claim found" + claimAdder.toString());
-                }
+        List<ClaimProvider> claimProviders = OAuth2ServiceComponentHolder.getClaimProviders();
+        if (claimProviders != null) {
+            for (ClaimProvider claimProvider : claimProviders) {
+                Map<String, Object> additionalJWTClaimsSet =
+                        claimProvider.getAdditionalClaims(authzReqMessageContext, tokenRespDTO);
                 if (additionalJWTClaimsSet != null) {
                     jwtClaimsSet.setAllClaims(additionalJWTClaimsSet);
+                    if (log.isDebugEnabled()) {
+                        for (Map.Entry<String, Object> entry : additionalJWTClaimsSet.entrySet()) {
+                            log.debug("Additional claim found :" + entry.getKey() + ": " + entry.getValue());
+                        }
+                    }
                 }
             }
         }

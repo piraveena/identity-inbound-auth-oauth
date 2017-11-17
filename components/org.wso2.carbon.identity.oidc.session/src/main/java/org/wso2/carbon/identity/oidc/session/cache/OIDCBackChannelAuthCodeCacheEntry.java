@@ -12,18 +12,18 @@ public class OIDCBackChannelAuthCodeCacheEntry extends CacheEntry {
     private String sessionId;
 
     /**
+     * Sets sessionId
+     *
      * @param sessionId
      */
     public void setSessionId(String sessionId) {
-
         this.sessionId = sessionId;
     }
 
     /**
-     * @return sessionId (sid Cliam) for OIDCBackChannel Logout
+     * @return sessionId for OIDCBackChannel Logout
      */
     public String getSessionId() {
-
         return sessionId;
     }
 }

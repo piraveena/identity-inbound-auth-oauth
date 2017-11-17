@@ -22,6 +22,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -135,7 +136,7 @@ public class OIDCLogoutServlet extends HttpServlet {
             // User consent received for logout
             if (consent.equals(OAuthConstants.Consent.APPROVE)) {
                 // BackChannel logout request.
-                backChannelLogout(request, response);
+                backChannelLogout(request);
                 // User approved logout. Logout from authentication framework
                 sendToFrameworkForLogout(request, response);
                 return;
@@ -167,7 +168,7 @@ public class OIDCLogoutServlet extends HttpServlet {
                     addSessionDataToCache(opBrowserStateCookie.getValue(), cacheEntry);
                 }
 
-                backChannelLogout(request, response);
+                backChannelLogout(request);
                 sendToFrameworkForLogout(request, response);
                 return;
             } else {
@@ -528,19 +529,18 @@ public class OIDCLogoutServlet extends HttpServlet {
      * Sends logout token to registered back-channel logout uris.
      *
      * @param request
-     * @param response
      */
-    private void backChannelLogout(HttpServletRequest request, HttpServletResponse response) {
+    private void backChannelLogout(HttpServletRequest request) {
         Map<String, String> logoutTokenList = null;
 
         try {
             DefaultLogoutTokenBuilder logoutTokenBuilder  = new DefaultLogoutTokenBuilder();
-            logoutTokenList = logoutTokenBuilder.buildLogoutToken(request, response);
+            logoutTokenList = logoutTokenBuilder.buildLogoutToken(request);
         } catch (IdentityOAuth2Exception | InvalidOAuthClientException e) {
             log.error("Error while initializing " + DefaultLogoutTokenBuilder.class, e);
         }
 
-        if (logoutTokenList != null) {
+        if (!logoutTokenList.isEmpty()) {
             for (Map.Entry<String, String> map : logoutTokenList.entrySet()) {
                 String logoutToken = map.getKey();
                 String bcLogoutUrl = map.getValue();

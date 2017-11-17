@@ -50,7 +50,7 @@
     String userAccessTokenExpiryTime = request.getParameter("userAccessTokenExpiryTime");
     String applicationAccessTokenExpiryTime = request.getParameter("applicationAccessTokenExpiryTime");
     String refreshTokenExpiryTime = request.getParameter("refreshTokenExpiryTime");
-    String backchannelLogoutUrl=request.getParameter("bclogout");
+    String backchannelLogoutUrl = request.getParameter("bclogout");
 
 	boolean pkceMandatory = false;
 	boolean pkceSupportPlain = false;
@@ -83,7 +83,7 @@
 		OAuthAdminClient client = new OAuthAdminClient(cookie, backendServerURL, configContext);
 		app.setApplicationName(applicationName);
 		app.setCallbackUrl(callback);
-        app.setBackChannelLogoutUrl(backchannelLogoutUrl);
+		app.setBackChannelLogoutUrl(backchannelLogoutUrl);
 		app.setOAuthVersion(oauthVersion);
 		app.setUserAccessTokenExpiryTime(Long.parseLong(userAccessTokenExpiryTime));
 		app.setApplicationAccessTokenExpiryTime(Long.parseLong(applicationAccessTokenExpiryTime));

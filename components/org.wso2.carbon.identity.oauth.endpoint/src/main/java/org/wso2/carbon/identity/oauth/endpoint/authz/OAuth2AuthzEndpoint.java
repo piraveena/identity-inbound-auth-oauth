@@ -1459,54 +1459,8 @@ public class OAuth2AuthzEndpoint {
                     log.debug("User authenticated. Initiate OIDC browser session.");
                 }
                 opBrowserStateCookie = OIDCSessionManagementUtil.addOPBrowserStateCookie(response);
-                // Adding sid claim in the IDtoken to OIDCSessionState class
-                if (redirectURL != null) {
-                    if (redirectURL.contains("id_token")) {
-                        byte[] decodedBytes = null;
-                        if (redirectURL.contains("access_token")) {
-                            // Extracting id_token for response_type=id_token token.
-                            String[] idtoken = redirectURL.split("=")[2].split("&")[0].split("\\.");
-                            decodedBytes = Base64.decodeBase64(idtoken[1]);
-                        } else {
-                            // Extracting id_token for response_type=id_token.
-                            String[] idtoken = redirectURL.split("=")[1].split("\\.");
-                            decodedBytes = Base64.decodeBase64(idtoken[1]);
-                        }
-                        String idToken = new String(decodedBytes);
-                        JSONObject token = new JSONObject(idToken);
-                        if (token.has("sid")) {
-                            String sid = token.getString("sid");
-                            if (sid != null) {
-                                sessionStateObj.setSidClaim(sid);
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Sid claim found in ID token for OIDC back-channel " +
-                                            "logout implicit flow"+ sid);
-                                }
-                            } else {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("sid claim is null");
-                                }
-                            }
-                        } else {
-                            if (log.isDebugEnabled()) {
-                                log.debug("ID token does not contain sid claim in OIDC back-channel logout " +
-                                        "inplicit flow");
-                            }
-                        }
-                    }else if (redirectURL.contains("code")) {
-                        // Generating sid claim for authorization code flow.
-                        String sid = UUID.randomUUID().toString();
-                        sessionStateObj.setSidClaim(sid);
-                        String code = redirectURL.split("=")[1];
-                        // Store AuthCode and SessionID for back-channel logout in the cache.
-                        if (code != null) {
-                            OIDCBackChannelAuthCodeCacheKey authCacheKey = new OIDCBackChannelAuthCodeCacheKey(code);
-                            OIDCBackChannelAuthCodeCacheEntry sidCacheEntry = new OIDCBackChannelAuthCodeCacheEntry();
-                            sidCacheEntry.setSessionId(sid);
-                            OIDCBackChannelAuthCodeCache.getInstance().addToCache(authCacheKey, sidCacheEntry);
-                        }
-                    }
-                }
+                // Adding sid claim in the IDtoken to OIDCSessionState class.
+                storeSidClaim(redirectURL, sessionStateObj);
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
                 OIDCSessionManagementUtil.getSessionManager()
@@ -1527,17 +1481,8 @@ public class OAuth2AuthzEndpoint {
                         previousSessionState.addSessionParticipant(oAuth2Parameters.getClientId());
                         OIDCSessionManagementUtil.getSessionManager().restoreOIDCSessionState
                                 (oldOPBrowserStateCookieId, newOPBrowserStateCookieId, previousSessionState);
-                        if (redirectURL.contains("code")) {
-                            String code = redirectURL.split("=")[1];
-                            // Store AuthCode and SessionID for back-channel logout in the cache.
-                            if (code != null) {
-                                OIDCBackChannelAuthCodeCacheKey authCacheKey = new OIDCBackChannelAuthCodeCacheKey(code);
-                                OIDCBackChannelAuthCodeCacheEntry sidCacheEntry = new OIDCBackChannelAuthCodeCacheEntry();
-                                sidCacheEntry.setSessionId(previousSessionState.getSidClaim());
-                                OIDCBackChannelAuthCodeCache.getInstance().addToCache(authCacheKey, sidCacheEntry);
 
-                            }
-                        }
+                        storeSidClaim(redirectURL, previousSessionState);
                     }
                 } else {
                     log.warn("No session state found for the received Session ID : " + opBrowserStateCookie.getValue());
@@ -1644,5 +1589,52 @@ public class OAuth2AuthzEndpoint {
         } else {
             return OAuthProblemException.error(errorCode, errorMessage);
         }
+    }
+
+    private void storeSidClaim(String redirectURL, OIDCSessionState sessionState){
+        if (redirectURL != null) {
+            if (redirectURL.contains("id_token")) {
+                byte[] decodedBytes = null;
+                if (redirectURL.contains("access_token")) {
+                    // Extracting id_token for response_type=id_token token.
+                    String[] idtoken = redirectURL.split("=")[2].split("&")[0].split("\\.");
+                    decodedBytes = Base64.decodeBase64(idtoken[1]);
+                } else {
+                    // Extracting id_token for response_type=id_token.
+                    String[] idtoken = redirectURL.split("=")[1].split("\\.");
+                    decodedBytes = Base64.decodeBase64(idtoken[1]);
+                }
+                String idToken = new String(decodedBytes);
+                JSONObject token = new JSONObject(idToken);
+                if (token.has("sid")) {
+                    String sid = token.getString("sid");
+                    if (sid != null) {
+                        sessionState.setSidClaim(sid);
+                    }
+                }
+            } else if (redirectURL.contains("code")) {
+                String sid = sessionState.getSidClaim();
+                String code = redirectURL.split("=")[1];
+                if (sid == null) {
+                    // Generating sid claim for authorization code flow.
+                    sid = UUID.randomUUID().toString();
+                    sessionState.setSidClaim(sid);
+                }
+                cacheSessionID(sid, code);
+            }
+        }
+    }
+
+    /**
+     * Store Authorization Code and SessionID for back-channel logout in the cache.
+     *
+     * @param sessionId
+     * @param authorizationCode
+     */
+    private void cacheSessionID(String sessionId, String authorizationCode) {
+        OIDCBackChannelAuthCodeCacheKey authCacheKey = new OIDCBackChannelAuthCodeCacheKey(authorizationCode);
+        OIDCBackChannelAuthCodeCacheEntry sidCacheEntry = new OIDCBackChannelAuthCodeCacheEntry();
+        sidCacheEntry.setSessionId(sessionId);
+        OIDCBackChannelAuthCodeCache.getInstance().addToCache(authCacheKey, sidCacheEntry);
     }
 }

@@ -25,7 +25,10 @@ import org.wso2.carbon.identity.oauth2.token.OAuthTokenReqMessageContext;
 
 import java.util.Map;
 
-public interface ClaimAdder {
+/**
+ * Adds new claims into ID token for OIDC implicit and authorization code flow.
+ */
+public interface ClaimProvider {
 
     /**
      * Add claims to ID token during implicit flow
