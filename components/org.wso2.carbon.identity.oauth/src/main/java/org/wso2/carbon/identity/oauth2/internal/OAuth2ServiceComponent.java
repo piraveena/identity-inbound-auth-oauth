@@ -234,7 +234,7 @@ public class OAuth2ServiceComponent {
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unsetClaimProvider"
     )
-    protected void setProvider(ClaimProvider claimProvider) {
+    protected void setClaimProvider(ClaimProvider claimProvider) {
         if (log.isDebugEnabled()) {
             log.debug("Setting ClaimProvider Service");
         }
