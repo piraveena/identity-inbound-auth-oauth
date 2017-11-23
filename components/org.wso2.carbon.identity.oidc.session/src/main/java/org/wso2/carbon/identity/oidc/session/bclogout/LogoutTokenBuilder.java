@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.identity.oidc.session;
+package org.wso2.carbon.identity.oidc.session.bclogout;
 
 import org.wso2.carbon.identity.oauth.common.exception.InvalidOAuthClientException;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
@@ -36,7 +36,7 @@ public interface LogoutTokenBuilder {
      * @return
      * @throws IdentityOAuth2Exception
      */
-    public Map<String, String> buildLogoutToken(HttpServletRequest request)
+    Map<String, String> buildLogoutToken(HttpServletRequest request)
             throws IdentityOAuth2Exception, InvalidOAuthClientException;
 }
 

@@ -22,15 +22,9 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.core.util.KeyStoreManager;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus;
@@ -49,7 +43,7 @@ import org.wso2.carbon.identity.oauth.dao.OAuthAppDAO;
 import org.wso2.carbon.identity.oauth.dao.OAuthAppDO;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
-import org.wso2.carbon.identity.oidc.session.DefaultLogoutTokenBuilder;
+import org.wso2.carbon.identity.oidc.session.bclogout.LogoutRequestSender;
 import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCache;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionDataCacheEntry;
@@ -63,10 +57,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -136,7 +128,7 @@ public class OIDCLogoutServlet extends HttpServlet {
             // User consent received for logout
             if (consent.equals(OAuthConstants.Consent.APPROVE)) {
                 // BackChannel logout request.
-                backChannelLogout(request);
+                doBackChannelLogout(request);
                 // User approved logout. Logout from authentication framework
                 sendToFrameworkForLogout(request, response);
                 return;
@@ -168,7 +160,7 @@ public class OIDCLogoutServlet extends HttpServlet {
                     addSessionDataToCache(opBrowserStateCookie.getValue(), cacheEntry);
                 }
 
-                backChannelLogout(request);
+                doBackChannelLogout(request);
                 sendToFrameworkForLogout(request, response);
                 return;
             } else {
@@ -530,36 +522,8 @@ public class OIDCLogoutServlet extends HttpServlet {
      *
      * @param request
      */
-    private void backChannelLogout(HttpServletRequest request) {
-        Map<String, String> logoutTokenList = null;
+    private void doBackChannelLogout(HttpServletRequest request) {
 
-        try {
-            DefaultLogoutTokenBuilder logoutTokenBuilder  = new DefaultLogoutTokenBuilder();
-            logoutTokenList = logoutTokenBuilder.buildLogoutToken(request);
-        } catch (IdentityOAuth2Exception | InvalidOAuthClientException e) {
-            log.error("Error while initializing " + DefaultLogoutTokenBuilder.class, e);
-        }
-
-        if (!logoutTokenList.isEmpty()) {
-            for (Map.Entry<String, String> map : logoutTokenList.entrySet()) {
-                String logoutToken = map.getKey();
-                String bcLogoutUrl = map.getValue();
-                HttpClient client = new DefaultHttpClient();
-                HttpPost httpPost = new HttpPost(bcLogoutUrl);
-                BasicNameValuePair tokenUrlPair = new BasicNameValuePair("logoutToken", logoutToken);
-                ArrayList<BasicNameValuePair> list = new ArrayList<>();
-                list.add(tokenUrlPair);
-                try {
-                    httpPost.setEntity(new UrlEncodedFormEntity(list));
-                } catch (UnsupportedEncodingException e) {
-                    log.error("Error while sending logout token");
-                }
-                try {
-                    client.execute(httpPost);
-                } catch (IOException e) {
-                    log.error("Error while executing the http post");
-                }
-            }
-        }
+        LogoutRequestSender.getInstance().sendLogoutRequests(request);
     }
 }
