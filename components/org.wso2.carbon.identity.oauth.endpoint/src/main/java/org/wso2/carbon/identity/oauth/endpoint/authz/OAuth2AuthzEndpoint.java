@@ -96,6 +96,9 @@ import org.wso2.carbon.identity.oidc.session.OIDCSessionState;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCBackChannelAuthCodeCache;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCBackChannelAuthCodeCacheEntry;
 import org.wso2.carbon.identity.oidc.session.cache.OIDCBackChannelAuthCodeCacheKey;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionIdStore;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionIdStoreEntry;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionIdStoreKey;
 import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
 import org.wso2.carbon.identity.openidconnect.OIDCConstants;
 import org.wso2.carbon.identity.openidconnect.OIDCRequestObjectUtil;
@@ -2513,6 +2516,7 @@ public class OAuth2AuthzEndpoint {
                 opBrowserStateCookie = OIDCSessionManagementUtil.addOPBrowserStateCookie(response);
                 // Adding sid claim in the IDtoken to OIDCSessionState class.
                 storeSidClaim(redirectURL, sessionStateObj, oAuth2Parameters);
+                storeSessionIdentifier(request, opBrowserStateCookie.getValue());
                 sessionStateObj.setAuthenticatedUser(authenticatedUser);
                 sessionStateObj.addSessionParticipant(oAuth2Parameters.getClientId());
                 OIDCSessionManagementUtil.getSessionManager()
@@ -2586,6 +2590,21 @@ public class OAuth2AuthzEndpoint {
         return redirectURL;
     }
 
+    private void storeSessionIdentifier(HttpServletRequest request, String opbscookie) {
+
+        Cookie commonAuthIdCookie = FrameworkUtils.getCookie(request, FrameworkConstants.COMMONAUTH_COOKIE);
+        String sessionIdentifier = null;
+        if (commonAuthIdCookie != null) {
+            // Get the session context key value form common auth cookie value.
+            sessionIdentifier = DigestUtils.sha256Hex(commonAuthIdCookie.getValue());
+        }
+        if (StringUtils.isNotEmpty(sessionIdentifier)) {
+            OIDCSessionIdStoreKey key = new OIDCSessionIdStoreKey(sessionIdentifier);
+            OIDCSessionIdStoreEntry entry = new OIDCSessionIdStoreEntry();
+            entry.setOpbsCookieId(opbscookie);
+            OIDCSessionIdStore.getInstance().addToCache(key, entry);
+        }
+    }
     /**
      * Associates the authentication method references done while logged into the session (if any) to the OAuth cache.
      * The SessionDataCacheEntry then will be used when getting "AuthenticationMethodReferences". Please see

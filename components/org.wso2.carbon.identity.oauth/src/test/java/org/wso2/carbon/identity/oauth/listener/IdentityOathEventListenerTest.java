@@ -220,46 +220,6 @@ public class IdentityOathEventListenerTest extends IdentityBaseTest {
     }
 
     @Test
-    public void testDoPostSetUserClaimValue() throws Exception {
-        IdentityEventListenerConfig listenerConfig = mock(IdentityEventListenerConfig.class);
-        IdentityCacheConfig identityCacheConfig = mock(IdentityCacheConfig.class);
-        ClaimCache claimCache = mock(ClaimCache.class);
-        when(IdentityUtil.readEventListenerProperty(anyString(), anyString())).thenReturn(listenerConfig);
-        when(StringUtils.isNotBlank(anyString())).thenReturn(true);
-
-        assertTrue(identityOathEventListener.doPostSetUserClaimValue(username, userStoreManager));
-
-        when(IdentityUtil.readEventListenerProperty(anyString(), anyString())).thenReturn(null);
-        when(UserCoreUtil.getDomainName(userStoreManager.getRealmConfiguration())).thenReturn("DOMAIN_NAME");
-        when(IdentityUtil.getIdentityCacheConfig(anyString(), anyString())).thenReturn(identityCacheConfig);
-        when(claimCache.isEnabled()).thenReturn(false);
-
-        IdentityOathEventListener listener = new IdentityOathEventListener();
-        assertTrue(listener.doPostSetUserClaimValue(username, userStoreManager));
-    }
-
-    @Test
-    public void testDoPostSetUserClaimValues() throws Exception {
-        IdentityEventListenerConfig listenerConfig = mock(IdentityEventListenerConfig.class);
-        IdentityCacheConfig identityCacheConfig = mock(IdentityCacheConfig.class);
-        ClaimCache claimCache = mock(ClaimCache.class);
-
-        when(IdentityUtil.readEventListenerProperty(anyString(), anyString())).thenReturn(listenerConfig);
-        when(StringUtils.isNotBlank(anyString())).thenReturn(true);
-
-        assertTrue(identityOathEventListener.doPostSetUserClaimValues(username, mockedMapClaims, profileName,
-                userStoreManager));
-
-        when(IdentityUtil.readEventListenerProperty(anyString(), anyString())).thenReturn(null);
-        when(UserCoreUtil.getDomainName(userStoreManager.getRealmConfiguration())).thenReturn("DOMAIN_NAME");
-        when(IdentityUtil.getIdentityCacheConfig(anyString(), anyString())).thenReturn(identityCacheConfig);
-        when(claimCache.isEnabled()).thenReturn(false);
-
-        IdentityOathEventListener listener = new IdentityOathEventListener();
-        assertTrue(listener.doPostSetUserClaimValues(username, mockedMapClaims, profileName, userStoreManager));
-    }
-
-    @Test
     public void testDoPostAuthenticate() throws Exception {
         IdentityEventListenerConfig listenerConfig = mock(IdentityEventListenerConfig.class);
         IdentityCacheConfig identityCacheConfig = mock(IdentityCacheConfig.class);

@@ -25,8 +25,14 @@ import org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.oidc.session.OIDCSessionConstants;
 import org.wso2.carbon.identity.oidc.session.backchannellogout.LogoutRequestSender;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionIdStore;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionIdStoreEntry;
+import org.wso2.carbon.identity.oidc.session.cache.OIDCSessionIdStoreKey;
 import org.wso2.carbon.identity.oidc.session.util.OIDCSessionManagementUtil;
+
+import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +54,9 @@ public class OIDCLogoutEventHandler extends AbstractEventHandler {
             log.debug(event.getEventName() + " event received to OIDCLogoutEventHandler.");
         }
 
+        if (isTriggeredFromOidcApp(event)) {
+            return;
+        }
         if (StringUtils.equals(event.getEventName(), EventName.SESSION_TERMINATE.name())) {
             HttpServletRequest request = getHttpRequestFromEvent(event);
             Cookie opbsCookie = null;
@@ -63,13 +72,15 @@ public class OIDCLogoutEventHandler extends AbstractEventHandler {
                 opbsCookie = OIDCSessionManagementUtil.getOPBrowserStateCookie(request);
             }
 
-            if (hasOPBSCookieValue(opbsCookie)) {
+            String opbsCookieId = getopbsCookieId(event);
+            if (StringUtils.isNotEmpty(opbsCookieId)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("OPBS cookie with value " + opbsCookie.getValue() + " found. " +
+                    log.debug("OPBS cookie with value " + opbsCookieId + " found. " +
                             "Initiating session termination.");
                 }
-                LogoutRequestSender.getInstance().sendLogoutRequests(request);
-                OIDCSessionManagementUtil.getSessionManager().removeOIDCSessionState(opbsCookie.getValue());
+                LogoutRequestSender.getInstance().sendLogoutRequests(opbsCookieId);
+                OIDCSessionManagementUtil.getSessionManager().removeOIDCSessionState(opbsCookieId);
+                removeSessionIDCache(getSessionIdentifier(event));
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("There is no valid OIDC based service provider in the session to be terminated by " +
@@ -83,6 +94,114 @@ public class OIDCLogoutEventHandler extends AbstractEventHandler {
     public String getName() {
 
         return "OIDCLogoutEventHandler";
+    }
+
+    private boolean isTriggeredFromOidcApp(Event event) {
+
+        HttpServletRequest request = getHttpRequestFromEvent(event);
+        if (request != null) {
+            if (StringUtils.equals(request.getParameter(COMMON_AUTH_CALLER_PATH),
+                    OIDCSessionConstants.OIDCEndpoints.OIDC_LOGOUT_ENDPOINT)) {
+                // If a logout request is triggered from an OIDC app then the OIDCLogoutServlet
+                // and OIDCLogoutEventHandler both are triggered and the logout request is handled in both
+                // places. https://github.com/wso2/product-is/issues/6418
+                if (log.isDebugEnabled()) {
+                    log.debug("This is triggered from a OIDC service provider. Hence this request will not be handled" +
+                            " " + "by OIDCLogoutServlet");
+                }
+                String sessionIdentifier = getSessionIdentifier(event);
+                if (sessionIdentifier != null) {
+                    removeSessionIDCache(sessionIdentifier);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getopbsCookieId(Event event) {
+
+        // Get the opbscookie from request.
+        HttpServletRequest request = getHttpRequestFromEvent(event);
+        if (request != null) {
+            return getOpbsCookieFromRequest(request);
+        } else {
+            // If opbscookie is not found in the request, get from cache.
+            return getOpbsCookieFromCache(event);
+        }
+    }
+
+    /**
+     * Get opbscookie value from the httpservlet request.
+     *
+     * @param request HttpServletRequest
+     * @return opbscookie value.
+     */
+    private String getOpbsCookieFromRequest(HttpServletRequest request) {
+
+        Cookie opbsCookie = OIDCSessionManagementUtil.getOPBrowserStateCookie(request);
+        if (opbsCookie != null) {
+            return opbsCookie.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * Get sessionIdentifier from event.
+     *
+     * @param event Event.
+     * @return SessionId.
+     */
+    private String getSessionIdentifier(Event event) {
+
+        if (event.getEventProperties().get(EventProperty.PARAMS) != null) {
+            Map<String, Object> params = (Map<String, Object>) event.getEventProperties().get(EventProperty.PARAMS);
+            if (params != null) {
+                String sessionId = (String) params.get("sessionId");
+                return sessionId;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get opbscookie value from the the cache using sessionId in the event.
+     *
+     * @param event Event.
+     * @return opbscookie value.
+     */
+    private String getOpbsCookieFromCache(Event event) {
+
+        String sessionIdentifier = getSessionIdentifier(event);
+        if (StringUtils.isNotEmpty(sessionIdentifier)) {
+            return getOpbsCookieFromCache(sessionIdentifier);
+        }
+        return null;
+    }
+
+    /**
+     * Get opbscookie value from the cache using sessionIdentifier
+     *
+     * @param sessionIdentifier SessionIdentifier
+     * @return opbscookie value.
+     */
+    private String getOpbsCookieFromCache(String sessionIdentifier) {
+
+        OIDCSessionIdStoreKey key = new OIDCSessionIdStoreKey(sessionIdentifier);
+        OIDCSessionIdStoreEntry entry = OIDCSessionIdStore.getInstance().getValueFromCache(key);
+        if (entry != null) {
+            return entry.getopbsCookieId();
+        }
+        return null;
+    }
+
+    private void removeSessionIDCache(String sessionIdentifier) {
+
+        OIDCSessionIdStoreKey key = new OIDCSessionIdStoreKey(sessionIdentifier);
+        if (log.isDebugEnabled()) {
+            log.debug("OIDCSessionIDCache is cleared using sessionId provided");
+        }
+        OIDCSessionIdStore.getInstance().clearCacheEntry(key);
     }
 
     private HttpServletRequest getHttpRequestFromEvent(Event event) {
