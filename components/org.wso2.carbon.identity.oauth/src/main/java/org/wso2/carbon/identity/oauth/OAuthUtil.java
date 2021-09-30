@@ -136,7 +136,7 @@ public final class OAuthUtil {
      */
     public static void clearOAuthCache(String consumerKey, AuthenticatedUser authorizedUser) {
 
-        String authenticatedIDP = authorizedUser.getFederatedIdPName();
+        String authenticatedIDP = OAuth2Util.getAuthenticatedIDP(authorizedUser);
         String userId;
         try {
             userId = authorizedUser.getUserId();
@@ -187,7 +187,7 @@ public final class OAuthUtil {
      */
     public static void clearOAuthCache(String consumerKey, AuthenticatedUser authorizedUser, String scope) {
 
-        String authenticatedIDP = authorizedUser.getFederatedIdPName();
+        String authenticatedIDP = OAuth2Util.getAuthenticatedIDP(authorizedUser);
 
         String userId;
         try {
@@ -244,7 +244,7 @@ public final class OAuthUtil {
     public static void clearOAuthCache(String consumerKey, AuthenticatedUser authorizedUser, String scope,
                                        String tokenBindingReference) {
 
-        String authenticatedIDP = authorizedUser.getFederatedIdPName();
+        String authenticatedIDP = OAuth2Util.getAuthenticatedIDP(authorizedUser);
 
         String userId;
         try {
@@ -309,14 +309,11 @@ public final class OAuthUtil {
     public static String buildCacheKeyStringForToken(String clientId, String scope, String authorizedUserId,
             String authenticatedIDP, String tokenBindingReference) {
 
-        return clientId + ":" + authorizedUserId + ":" + scope + ":" + authenticatedIDP + ":" + tokenBindingReference;
+        return OAuth2Util.buildCacheKeyStringForTokenWithUserId(clientId, scope, authorizedUserId,
+                authenticatedIDP, tokenBindingReference);
     }
 
     public static void clearOAuthCache(String oauthCacheKey) {
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Clearing cache for cache key: " + oauthCacheKey);
-        }
 
         OAuthCacheKey cacheKey = new OAuthCacheKey(oauthCacheKey);
         OAuthCache.getInstance().clearCacheEntry(cacheKey);

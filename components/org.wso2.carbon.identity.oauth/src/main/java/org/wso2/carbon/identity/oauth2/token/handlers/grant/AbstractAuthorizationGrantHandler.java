@@ -509,8 +509,9 @@ public abstract class AbstractAuthorizationGrantHandler implements Authorization
                 throw new IdentityOAuth2Exception(
                         "User id is not available for user: " + tokenToCache.getAuthzUser().getLoggableUserId(), e);
             }
-            OAuthCacheKey cacheKey = getOAuthCacheKey(scope, tokenToCache.getConsumerKey(),
-                    userId, tokenToCache.getAuthzUser().getFederatedIdPName(),
+
+            String authenticatedIDP = OAuth2Util.getAuthenticatedIDP(tokenToCache.getAuthzUser());
+            OAuthCacheKey cacheKey = getOAuthCacheKey(scope, tokenToCache.getConsumerKey(), userId, authenticatedIDP,
                     getTokenBindingReference(tokenToCache));
             oauthCache.addToCache(cacheKey, tokenToCache);
             if (log.isDebugEnabled()) {
@@ -671,6 +672,9 @@ public abstract class AbstractAuthorizationGrantHandler implements Authorization
 
         String cacheKeyString = OAuth2Util.buildCacheKeyStringForTokenWithUserId(consumerKey, scope, authorizedUserId,
                 authenticatedIDP, tokenBindingType);
+        if (log.isDebugEnabled()) {
+            log.debug("Getting cache key for OAuthCache: " + cacheKeyString);
+        }
         return new OAuthCacheKey(cacheKeyString);
     }
 
@@ -871,7 +875,14 @@ public abstract class AbstractAuthorizationGrantHandler implements Authorization
                 removeFromCache(cacheKey, consumerKey, existingToken);
                 return null;
             }
+            return existingToken;
         }
+        if (existingToken != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Retrieved active access token from OAuthCache for the cachekey: " + cacheKey);
+            }
+        }
+
         return existingToken;
     }
 
