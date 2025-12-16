@@ -112,6 +112,7 @@ public class OIDCLogoutServlet extends HttpServlet {
     private static final String UTF_8 = "UTF-8";
     private static final long serialVersionUID = -9203934217770142011L;
 
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

@@ -25,6 +25,7 @@ public class UpdateRequestDTO {
     private String clientSecret = null;
     private String backchannelLogoutUri = null;
     private boolean backchannelLogoutSessionRequired;
+    private String frontchannelLogoutUri = null;
     private String extApplicationDisplayName = null;
     private String extApplicationVersion = null;
     private String extApplicationOwner = null;
@@ -142,6 +143,18 @@ public class UpdateRequestDTO {
 
     public void setBackchannelLogoutSessionRequired(boolean backchannelLogoutSessionRequired) {
         this.backchannelLogoutSessionRequired = backchannelLogoutSessionRequired;
+    }
+
+    @ApiModelProperty
+    @JsonProperty("frontchannel_logout_uri")
+    public String getFrontchannelLogoutUri() {
+
+        return frontchannelLogoutUri;
+    }
+
+    public void setFrontchannelLogoutUri(String frontchannelLogoutUri) {
+
+        this.frontchannelLogoutUri = frontchannelLogoutUri;
     }
 
     @ApiModelProperty

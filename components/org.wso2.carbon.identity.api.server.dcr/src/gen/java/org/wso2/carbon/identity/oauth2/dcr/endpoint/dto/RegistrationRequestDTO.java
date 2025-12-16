@@ -34,6 +34,7 @@ public class RegistrationRequestDTO  {
   private String spTemplateName = null;
   private String backchannelLogoutUri = null;
   private boolean backchannelLogoutSessionRequired;
+  private String frontchannelLogoutUri = null;
   private boolean isManagementApp;
   private String extApplicationDisplayName = null;
   private String extApplicationOwner = null;
@@ -200,6 +201,18 @@ public class RegistrationRequestDTO  {
   public void setBackchannelLogoutSessionRequired(boolean backchannelLogoutSessionRequired) {
     this.backchannelLogoutSessionRequired = backchannelLogoutSessionRequired;
   }
+
+    @ApiModelProperty
+    @JsonProperty("frontchannel_logout_uri")
+    public String getFrontchannelLogoutUri() {
+
+      return frontchannelLogoutUri;
+    }
+
+    public void setFrontchannelLogoutUri(String frontchannelLogoutUri) {
+
+      this.frontchannelLogoutUri = frontchannelLogoutUri;
+    }
 
   @ApiModelProperty
   @JsonProperty("ext_param_sp_template")
